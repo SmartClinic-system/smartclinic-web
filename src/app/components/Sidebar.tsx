@@ -21,8 +21,8 @@ import {
   Chat,
   Settings,
   Add,
-  Spa,
 } from "@mui/icons-material";
+import SmartClinicLogo from "./SmartClinicLogo";
 
 const drawerWidth = 256;
 
@@ -79,26 +79,8 @@ export default function Sidebar() {
       }}
     >
       {/* Logo */}
-      <Box
-        sx={{ display: "flex", alignItems: "center", gap: 1.5, px: 1, mb: 3 }}
-      >
-        <Box
-          sx={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            width: 32,
-            height: 32,
-            borderRadius: 2,
-            backgroundColor: "primary.main",
-            color: "white",
-          }}
-        >
-          <Spa sx={{ fontSize: 16 }} />
-        </Box>
-        <Typography variant="h6" sx={{ fontSize: "1.125rem", fontWeight: 700 }}>
-          ClinicEMR
-        </Typography>
+      <Box sx={{ px: 1, mb: 3 }}>
+        <SmartClinicLogo size="small" />
       </Box>
 
       {/* Doctor Profile */}

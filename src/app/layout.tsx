@@ -16,8 +16,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "City Clinic - EMR System",
-  description: "Electronic Medical Records System for City Clinic",
+  title: "Smart Clinic - EMR System",
+  description: "Electronic Medical Records System for Smart Clinic",
 };
 
 export default function RootLayout({
