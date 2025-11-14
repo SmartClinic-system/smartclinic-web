@@ -14,8 +14,6 @@ import {
   Link,
 } from "@mui/material";
 import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
-import SmartClinicLogo from "@/components/SmartClinicLogo";
-import Footer from "@/components/Footer";
 
 const sharedFieldStyles = {
   "& .MuiOutlinedInput-root": {
@@ -119,38 +117,15 @@ export default function RegisterPage() {
   });
 
   return (
-    <Box
+    <Card
       sx={{
-        minHeight: "100vh",
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        justifyContent: "center",
-        backgroundColor: "#F8F9FA",
-        p: 2,
+        borderRadius: 4,
+        border: "1px solid #E2E8F0",
+        boxShadow: "0 12px 32px rgba(15, 23, 42, 0.08)",
+        p: 4,
+        backgroundColor: "#fff",
       }}
     >
-      <Box sx={{ width: "100%", maxWidth: "28rem" }}>
-        <Box
-          sx={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            mb: 4,
-          }}
-        >
-          <SmartClinicLogo size="medium" />
-        </Box>
-
-        <Card
-          sx={{
-            borderRadius: 4,
-            border: "1px solid #E2E8F0",
-            boxShadow: "0 12px 32px rgba(15, 23, 42, 0.08)",
-            p: 4,
-            backgroundColor: "#fff",
-          }}
-        >
           <Typography
             variant="h4"
             sx={{
@@ -382,11 +357,7 @@ export default function RegisterPage() {
               </Link>
             </Typography>
           </Box>
-        </Card>
-
-        <Footer />
-      </Box>
-    </Box>
+    </Card>
   );
 }
 

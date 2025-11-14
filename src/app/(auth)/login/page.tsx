@@ -18,8 +18,6 @@ import {
 import NextLink from "next/link";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
 import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
-import SmartClinicLogo from "@/components/SmartClinicLogo";
-import Footer from "@/components/Footer";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -68,40 +66,15 @@ export default function LoginPage() {
   };
 
   return (
-    <Box
+    <Card
       sx={{
-        minHeight: "100vh",
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        justifyContent: "center",
-        backgroundColor: "#F8F9FA",
-        p: 2,
+        borderRadius: 4,
+        border: "1px solid #E2E8F0",
+        boxShadow: "0 12px 32px rgba(15, 23, 42, 0.08)",
+        p: 4,
+        backgroundColor: "#fff",
       }}
     >
-      <Box sx={{ width: "100%", maxWidth: "28rem" }}>
-        {/* Header */}
-        <Box
-          sx={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            mb: 4,
-          }}
-        >
-          <SmartClinicLogo size="medium" />
-        </Box>
-
-        {/* Main Login Form Card */}
-        <Card
-          sx={{
-            borderRadius: 4,
-            border: "1px solid #E2E8F0",
-            boxShadow: "0 12px 32px rgba(15, 23, 42, 0.08)",
-            p: 4,
-            backgroundColor: "#fff",
-          }}
-        >
           <Typography
             variant="h4"
             sx={{
@@ -356,10 +329,6 @@ export default function LoginPage() {
               Sign Up for a New Clinic
             </Button>
           </Box>
-        </Card>
-
-        <Footer />
-      </Box>
-    </Box>
+    </Card>
   );
 }
