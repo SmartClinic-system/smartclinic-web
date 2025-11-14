@@ -27,7 +27,7 @@ import {
   PersonAdd,
   Sms,
 } from "@mui/icons-material";
-import Sidebar from "./components/Sidebar";
+import Sidebar from "@/components/Sidebar";
 
 export default function DashboardPage() {
   const [searchValue, setSearchValue] = useState("");

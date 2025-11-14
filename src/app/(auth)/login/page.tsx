@@ -18,8 +18,8 @@ import {
 import NextLink from "next/link";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
 import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
-import SmartClinicLogo from "@/app/components/SmartClinicLogo";
-import Footer from "@/app/components/Footer";
+import SmartClinicLogo from "@/components/SmartClinicLogo";
+import Footer from "@/components/Footer";
 
 export default function LoginPage() {
   const router = useRouter();

@@ -25,7 +25,7 @@ import {
   ChevronRight,
 } from "@mui/icons-material";
 import { DataGrid, GridColDef, GridActionsCellItem } from "@mui/x-data-grid";
-import Sidebar from "../components/Sidebar";
+import Sidebar from "@/components/Sidebar";
 
 interface Patient {
   id: string;

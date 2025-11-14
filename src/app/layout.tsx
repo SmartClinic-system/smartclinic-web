@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Inter, Geist_Mono } from "next/font/google";
-import MaterialSymbolsLoader from "./components/MaterialSymbolsLoader";
-import ThemeRegistry from "./components/ThemeRegistry";
+import MaterialSymbolsLoader from "@/components/MaterialSymbolsLoader";
+import ThemeRegistry from "@/components/ThemeRegistry";
 import "./globals.css";
 
 const inter = Inter({

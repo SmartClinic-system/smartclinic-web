@@ -14,8 +14,8 @@ import {
   Link,
 } from "@mui/material";
 import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
-import SmartClinicLogo from "@/app/components/SmartClinicLogo";
-import Footer from "@/app/components/Footer";
+import SmartClinicLogo from "@/components/SmartClinicLogo";
+import Footer from "@/components/Footer";
 
 const sharedFieldStyles = {
   "& .MuiOutlinedInput-root": {
