@@ -34,6 +34,7 @@ interface Patient {
   dateOfBirth: string;
   phoneNumber: string;
   lastVisit: string;
+  status: "Active" | "Inactive";
 }
 
 const patients: Patient[] = [
@@ -44,6 +45,7 @@ const patients: Patient[] = [
     dateOfBirth: "1985-05-15",
     phoneNumber: "(555) 123-4567",
     lastVisit: "2023-10-22",
+    status: "Active",
   },
   {
     id: "2",
@@ -52,6 +54,7 @@ const patients: Patient[] = [
     dateOfBirth: "1992-09-01",
     phoneNumber: "(555) 987-6543",
     lastVisit: "2023-11-05",
+    status: "Active",
   },
   {
     id: "3",
@@ -60,6 +63,7 @@ const patients: Patient[] = [
     dateOfBirth: "1988-11-23",
     phoneNumber: "(555) 246-8135",
     lastVisit: "2023-09-18",
+    status: "Inactive",
   },
   {
     id: "4",
@@ -68,6 +72,7 @@ const patients: Patient[] = [
     dateOfBirth: "1979-02-28",
     phoneNumber: "(555) 314-1592",
     lastVisit: "2023-11-12",
+    status: "Active",
   },
   {
     id: "5",
@@ -76,6 +81,7 @@ const patients: Patient[] = [
     dateOfBirth: "1990-07-14",
     phoneNumber: "(555) 555-0123",
     lastVisit: "2023-10-30",
+    status: "Active",
   },
   {
     id: "6",
@@ -84,6 +90,7 @@ const patients: Patient[] = [
     dateOfBirth: "1985-03-20",
     phoneNumber: "(555) 444-5678",
     lastVisit: "2023-11-08",
+    status: "Inactive",
   },
   {
     id: "7",
@@ -92,6 +99,7 @@ const patients: Patient[] = [
     dateOfBirth: "1995-12-05",
     phoneNumber: "(555) 333-9012",
     lastVisit: "2023-09-25",
+    status: "Active",
   },
   {
     id: "8",
@@ -100,6 +108,7 @@ const patients: Patient[] = [
     dateOfBirth: "1982-08-17",
     phoneNumber: "(555) 222-3456",
     lastVisit: "2023-11-15",
+    status: "Active",
   },
   {
     id: "9",
@@ -108,6 +117,7 @@ const patients: Patient[] = [
     dateOfBirth: "1991-04-22",
     phoneNumber: "(555) 111-7890",
     lastVisit: "2023-10-10",
+    status: "Inactive",
   },
   {
     id: "10",
@@ -116,6 +126,7 @@ const patients: Patient[] = [
     dateOfBirth: "1987-11-30",
     phoneNumber: "(555) 999-2345",
     lastVisit: "2023-11-20",
+    status: "Active",
   },
 ];
 
@@ -139,6 +150,13 @@ export default function PatientsPage() {
           patient.fullName.toLowerCase().includes(searchLower) ||
           patient.patientId.toLowerCase().includes(searchLower) ||
           patient.phoneNumber.includes(searchValue)
+      );
+    }
+
+    // Status filter
+    if (statusFilter !== "All") {
+      filtered = filtered.filter(
+        (patient) => patient.status === statusFilter
       );
     }
 
@@ -201,6 +219,22 @@ export default function PatientsPage() {
       field: "lastVisit",
       headerName: "Last Visit",
       width: 150,
+    },
+    {
+      field: "status",
+      headerName: "Status",
+      width: 140,
+      renderCell: (params) => (
+        <Chip
+          label={params.value}
+          size="small"
+          color={params.value === "Active" ? "success" : "default"}
+          sx={{
+            fontWeight: 600,
+            minWidth: 80,
+          }}
+        />
+      ),
     },
     {
       field: "actions",
