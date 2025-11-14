@@ -1,8 +1,10 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { useForm } from "@tanstack/react-form";
 import {
+  Alert,
   Box,
   Card,
   TextField,
@@ -15,11 +17,16 @@ import {
 } from "@mui/material";
 import NextLink from "next/link";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
-import SmartClinicLogo from "../components/SmartClinicLogo";
-import Footer from "../components/Footer";
+import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
+import SmartClinicLogo from "@/app/components/SmartClinicLogo";
+import Footer from "@/app/components/Footer";
 
 export default function LoginPage() {
+  const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
+  const [formError, setFormError] = useState<string | null>(null);
+  const [formSuccess, setFormSuccess] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const form = useForm({
     defaultValues: {
@@ -27,7 +34,32 @@ export default function LoginPage() {
       password: "",
     },
     onSubmit: async ({ value }) => {
-      console.log("Login attempt:", value);
+      setFormError(null);
+      setFormSuccess(null);
+      setIsSubmitting(true);
+
+      try {
+        const supabase = getSupabaseBrowserClient();
+        const { error } = await supabase.auth.signInWithPassword({
+          email: value.email.trim(),
+          password: value.password,
+        });
+
+        if (error) {
+          throw error;
+        }
+
+        setFormSuccess("Signed in successfully. Redirecting...");
+        router.push("/");
+      } catch (error) {
+        const message =
+          error instanceof Error
+            ? error.message
+            : "Unable to sign in. Please try again.";
+        setFormError(message);
+      } finally {
+        setIsSubmitting(false);
+      }
     },
   });
 
@@ -92,6 +124,16 @@ export default function LoginPage() {
             }}
             sx={{ display: "flex", flexDirection: "column", gap: 2 }}
           >
+            {formError && (
+              <Alert severity="error" sx={{ mb: 1 }}>
+                {formError}
+              </Alert>
+            )}
+            {formSuccess && (
+              <Alert severity="success" sx={{ mb: 1 }}>
+                {formSuccess}
+              </Alert>
+            )}
             {/* Email Field */}
             <form.Field name="email">
               {(field) => (
@@ -225,6 +267,7 @@ export default function LoginPage() {
               type="submit"
               fullWidth
               variant="contained"
+              disabled={isSubmitting}
               sx={{
                 height: "48px",
                 fontSize: "1rem",
@@ -236,7 +279,7 @@ export default function LoginPage() {
                 mt: 1,
               }}
             >
-              Sign In
+              {isSubmitting ? "Signing In..." : "Sign In"}
             </Button>
 
             {/* Secondary Links */}

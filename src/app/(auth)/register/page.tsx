@@ -1,8 +1,11 @@
 "use client";
 
+import { useState } from "react";
 import NextLink from "next/link";
+import { useRouter } from "next/navigation";
 import { useForm } from "@tanstack/react-form";
 import {
+  Alert,
   Box,
   Card,
   TextField,
@@ -10,8 +13,9 @@ import {
   Typography,
   Link,
 } from "@mui/material";
-import SmartClinicLogo from "../components/SmartClinicLogo";
-import Footer from "../components/Footer";
+import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
+import SmartClinicLogo from "@/app/components/SmartClinicLogo";
+import Footer from "@/app/components/Footer";
 
 const sharedFieldStyles = {
   "& .MuiOutlinedInput-root": {
@@ -40,6 +44,11 @@ const sharedFieldStyles = {
 } as const;
 
 export default function RegisterPage() {
+  const router = useRouter();
+  const [formError, setFormError] = useState<string | null>(null);
+  const [formSuccess, setFormSuccess] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   const form = useForm({
     defaultValues: {
       clinicName: "",
@@ -49,7 +58,63 @@ export default function RegisterPage() {
       confirmPassword: "",
     },
     onSubmit: async ({ value }) => {
-      console.log("Register attempt:", value);
+      setFormError(null);
+      setFormSuccess(null);
+
+      if (value.password !== value.confirmPassword) {
+        setFormError("Passwords do not match.");
+        return;
+      }
+
+      setIsSubmitting(true);
+
+      try {
+        const supabase = getSupabaseBrowserClient();
+        const emailRedirectTo =
+          typeof window !== "undefined"
+            ? `${window.location.origin}/login`
+            : undefined;
+
+        const { data, error } = await supabase.auth.signUp({
+          email: value.email.trim(),
+          password: value.password,
+          options: {
+            emailRedirectTo,
+            data: {
+              clinicName: value.clinicName.trim(),
+              doctorName: value.doctorName.trim(),
+            },
+          },
+        });
+
+        if (error) {
+          throw error;
+        }
+
+        form.reset();
+
+        if (data.session) {
+          setFormSuccess("Account created. Redirecting...");
+          router.push("/");
+          return;
+        }
+
+        setFormSuccess(
+          "Check your inbox to confirm your email, then sign in."
+        );
+
+        setTimeout(() => {
+          router.push("/login");
+        }, 1500);
+      } catch (error) {
+        const message =
+          error instanceof Error
+            ? error.message
+            : "Unable to create an account. Please try again.";
+        setFormError(message);
+      } finally {
+        setIsSubmitting(false);
+      }
     },
   });
 
@@ -108,6 +173,16 @@ export default function RegisterPage() {
             }}
             sx={{ display: "flex", flexDirection: "column", gap: 2 }}
           >
+            {formError && (
+              <Alert severity="error" sx={{ mb: 1 }}>
+                {formError}
+              </Alert>
+            )}
+            {formSuccess && (
+              <Alert severity="success" sx={{ mb: 1 }}>
+                {formSuccess}
+              </Alert>
+            )}
             <form.Field name="clinicName">
               {(field) => (
                 <Box sx={{ display: "flex", flexDirection: "column" }}>
@@ -127,7 +202,7 @@ export default function RegisterPage() {
                   <TextField
                     id="clinic-name"
                     type="text"
-                    placeholder="Enter your clinic's name"
+                    placeholder="Enter your clinic&apos;s name"
                     value={field.state.value}
                     onChange={(e) => field.handleChange(e.target.value)}
                     onBlur={field.handleBlur}
@@ -153,7 +228,7 @@ export default function RegisterPage() {
                       color: "text.primary",
                     }}
                   >
-                    Doctor's Full Name
+                    Doctor&apos;s Full Name
                   </Typography>
                   <TextField
                     id="doctor-name"
@@ -267,6 +342,7 @@ export default function RegisterPage() {
               type="submit"
               fullWidth
               variant="contained"
+              disabled={isSubmitting}
               sx={{
                 height: "48px",
                 fontSize: "1rem",
@@ -278,7 +354,7 @@ export default function RegisterPage() {
                 mt: 1,
               }}
             >
-              Sign Up
+              {isSubmitting ? "Creating Account..." : "Sign Up"}
             </Button>
 
             <Typography
