@@ -15,6 +15,7 @@
     "@mui/material": "^7.3.5",
     "@mui/x-data-grid": "^8.17.0",
     "@mui/x-date-pickers": "^8.17.0",
+    "@tanstack/react-form": "^1.25.0",
     "dayjs": "^1.11.19",
     "next": "15.5.3",
     "react": "19.1.0",

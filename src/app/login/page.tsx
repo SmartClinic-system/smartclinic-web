@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useForm } from "@tanstack/react-form";
 import {
   Box,
   Card,
@@ -18,15 +19,17 @@ import SmartClinicLogo from "../components/SmartClinicLogo";
 import Footer from "../components/Footer";
 
 export default function LoginPage() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    // Handle login logic here
-    console.log("Login attempt:", { email, password });
-  };
+  const form = useForm({
+    defaultValues: {
+      email: "",
+      password: "",
+    },
+    onSubmit: async ({ value }) => {
+      console.log("Login attempt:", value);
+    },
+  });
 
   const handleTogglePasswordVisibility = () => {
     setShowPassword(!showPassword);
@@ -83,126 +86,139 @@ export default function LoginPage() {
 
           <Box
             component="form"
-            onSubmit={handleSubmit}
+            onSubmit={(e) => {
+              e.preventDefault();
+              form.handleSubmit();
+            }}
             sx={{ display: "flex", flexDirection: "column", gap: 2 }}
           >
             {/* Email Field */}
-            <Box sx={{ display: "flex", flexDirection: "column" }}>
-              <Typography
-                component="label"
-                htmlFor="email"
-                sx={{
-                  fontSize: "0.875rem",
-                  fontWeight: 500,
-                  lineHeight: "normal",
-                  pb: 1,
-                  color: "text.primary",
-                }}
-              >
-                Email
-              </Typography>
-              <TextField
-                id="email"
-                type="text"
-                placeholder="Enter your email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                fullWidth
-                sx={{
-                  "& .MuiOutlinedInput-root": {
-                    height: "48px",
-                    borderRadius: "12px",
-                    backgroundColor: "#F7F8FA",
-                    "& fieldset": {
-                      borderColor: "#E2E8F0",
-                    },
-                    "&:hover fieldset": {
-                      borderColor: "#94A3B8",
-                    },
-                    "&.Mui-focused fieldset": {
-                      borderColor: "#005A9C",
-                      borderWidth: "2px",
-                    },
-                    "& input": {
-                      fontSize: "1rem",
-                      fontWeight: 400,
-                    },
-                    "& input::placeholder": {
-                      color: "#9ca3af",
-                      opacity: 1,
-                    },
-                  },
-                }}
-              />
-            </Box>
+            <form.Field name="email">
+              {(field) => (
+                <Box sx={{ display: "flex", flexDirection: "column" }}>
+                  <Typography
+                    component="label"
+                    htmlFor="email"
+                    sx={{
+                      fontSize: "0.875rem",
+                      fontWeight: 500,
+                      lineHeight: "normal",
+                      pb: 1,
+                      color: "text.primary",
+                    }}
+                  >
+                    Email
+                  </Typography>
+                  <TextField
+                    id="email"
+                    type="email"
+                    placeholder="Enter your email"
+                    value={field.state.value}
+                    onChange={(e) => field.handleChange(e.target.value)}
+                    onBlur={field.handleBlur}
+                    required
+                    fullWidth
+                    sx={{
+                      "& .MuiOutlinedInput-root": {
+                        height: "48px",
+                        borderRadius: "12px",
+                        backgroundColor: "#F7F8FA",
+                        "& fieldset": {
+                          borderColor: "#E2E8F0",
+                        },
+                        "&:hover fieldset": {
+                          borderColor: "#94A3B8",
+                        },
+                        "&.Mui-focused fieldset": {
+                          borderColor: "#005A9C",
+                          borderWidth: "2px",
+                        },
+                        "& input": {
+                          fontSize: "1rem",
+                          fontWeight: 400,
+                        },
+                        "& input::placeholder": {
+                          color: "#9ca3af",
+                          opacity: 1,
+                        },
+                      },
+                    }}
+                  />
+                </Box>
+              )}
+            </form.Field>
 
             {/* Password Field */}
-            <Box sx={{ display: "flex", flexDirection: "column" }}>
-              <Typography
-                component="label"
-                htmlFor="password"
-                sx={{
-                  fontSize: "0.875rem",
-                  fontWeight: 500,
-                  lineHeight: "normal",
-                  pb: 1,
-                  color: "text.primary",
-                }}
-              >
-                Password
-              </Typography>
-              <TextField
-                id="password"
-                type={showPassword ? "text" : "password"}
-                placeholder="Enter your password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                fullWidth
-                sx={{
-                  "& .MuiOutlinedInput-root": {
-                    height: "48px",
-                    borderRadius: "12px",
-                    backgroundColor: "#F7F8FA",
-                    "& fieldset": {
-                      borderColor: "#E2E8F0",
-                    },
-                    "&:hover fieldset": {
-                      borderColor: "#94A3B8",
-                    },
-                    "&.Mui-focused fieldset": {
-                      borderColor: "#005A9C",
-                      borderWidth: "2px",
-                    },
-                    "& input": {
-                      fontSize: "1rem",
-                      fontWeight: 400,
-                    },
-                    "& input::placeholder": {
-                      color: "#9ca3af",
-                      opacity: 1,
-                    },
-                  },
-                }}
-                InputProps={{
-                  endAdornment: (
-                    <InputAdornment position="end">
-                      <IconButton
-                        aria-label="Toggle password visibility"
-                        onClick={handleTogglePasswordVisibility}
-                        edge="end"
-                        sx={{
-                          color: "#6b7280",
-                        }}
-                      >
-                        {showPassword ? <VisibilityOff /> : <Visibility />}
-                      </IconButton>
-                    </InputAdornment>
-                  ),
-                }}
-              />
-            </Box>
+            <form.Field name="password">
+              {(field) => (
+                <Box sx={{ display: "flex", flexDirection: "column" }}>
+                  <Typography
+                    component="label"
+                    htmlFor="password"
+                    sx={{
+                      fontSize: "0.875rem",
+                      fontWeight: 500,
+                      lineHeight: "normal",
+                      pb: 1,
+                      color: "text.primary",
+                    }}
+                  >
+                    Password
+                  </Typography>
+                  <TextField
+                    id="password"
+                    type={showPassword ? "text" : "password"}
+                    placeholder="Enter your password"
+                    value={field.state.value}
+                    onChange={(e) => field.handleChange(e.target.value)}
+                    onBlur={field.handleBlur}
+                    required
+                    fullWidth
+                    sx={{
+                      "& .MuiOutlinedInput-root": {
+                        height: "48px",
+                        borderRadius: "12px",
+                        backgroundColor: "#F7F8FA",
+                        "& fieldset": {
+                          borderColor: "#E2E8F0",
+                        },
+                        "&:hover fieldset": {
+                          borderColor: "#94A3B8",
+                        },
+                        "&.Mui-focused fieldset": {
+                          borderColor: "#005A9C",
+                          borderWidth: "2px",
+                        },
+                        "& input": {
+                          fontSize: "1rem",
+                          fontWeight: 400,
+                        },
+                        "& input::placeholder": {
+                          color: "#9ca3af",
+                          opacity: 1,
+                        },
+                      },
+                    }}
+                    InputProps={{
+                      endAdornment: (
+                        <InputAdornment position="end">
+                          <IconButton
+                            aria-label="Toggle password visibility"
+                            onClick={handleTogglePasswordVisibility}
+                            edge="end"
+                            sx={{
+                              color: "#6b7280",
+                            }}
+                          >
+                            {showPassword ? <VisibilityOff /> : <Visibility />}
+                          </IconButton>
+                        </InputAdornment>
+                      ),
+                    }}
+                  />
+                </Box>
+              )}
+            </form.Field>
 
             {/* Login Button */}
             <Button
