@@ -49,8 +49,6 @@ export default function RegisterPage() {
 
   const form = useForm({
     defaultValues: {
-      clinicName: "",
-      doctorName: "",
       email: "",
       password: "",
       confirmPassword: "",
@@ -78,10 +76,6 @@ export default function RegisterPage() {
           password: value.password,
           options: {
             emailRedirectTo,
-            data: {
-              clinicName: value.clinicName.trim(),
-              doctorName: value.doctorName.trim(),
-            },
           },
         });
 
@@ -100,10 +94,6 @@ export default function RegisterPage() {
         setFormSuccess(
           "Check your inbox to confirm your email, then sign in."
         );
-
-        setTimeout(() => {
-          router.push("/login");
-        }, 1500);
       } catch (error) {
         const message =
           error instanceof Error
@@ -137,7 +127,7 @@ export default function RegisterPage() {
               color: "text.primary",
             }}
           >
-            Create Account
+            Create Patient Account
           </Typography>
 
           <Box
@@ -158,67 +148,6 @@ export default function RegisterPage() {
                 {formSuccess}
               </Alert>
             )}
-            <form.Field name="clinicName">
-              {(field) => (
-                <Box sx={{ display: "flex", flexDirection: "column" }}>
-                  <Typography
-                    component="label"
-                    htmlFor="clinic-name"
-                    sx={{
-                      fontSize: "0.875rem",
-                      fontWeight: 500,
-                      lineHeight: "normal",
-                      pb: 1,
-                      color: "text.primary",
-                    }}
-                  >
-                    Clinic Name
-                  </Typography>
-                  <TextField
-                    id="clinic-name"
-                    type="text"
-                    placeholder="Enter your clinic&apos;s name"
-                    value={field.state.value}
-                    onChange={(e) => field.handleChange(e.target.value)}
-                    onBlur={field.handleBlur}
-                    required
-                    fullWidth
-                    sx={sharedFieldStyles}
-                  />
-                </Box>
-              )}
-            </form.Field>
-
-            <form.Field name="doctorName">
-              {(field) => (
-                <Box sx={{ display: "flex", flexDirection: "column" }}>
-                  <Typography
-                    component="label"
-                    htmlFor="doctor-name"
-                    sx={{
-                      fontSize: "0.875rem",
-                      fontWeight: 500,
-                      lineHeight: "normal",
-                      pb: 1,
-                      color: "text.primary",
-                    }}
-                  >
-                    Doctor&apos;s Full Name
-                  </Typography>
-                  <TextField
-                    id="doctor-name"
-                    type="text"
-                    placeholder="Enter your full name"
-                    value={field.state.value}
-                    onChange={(e) => field.handleChange(e.target.value)}
-                    onBlur={field.handleBlur}
-                    required
-                    fullWidth
-                    sx={sharedFieldStyles}
-                  />
-                </Box>
-              )}
-            </form.Field>
 
             <form.Field name="email">
               {(field) => (
