@@ -12,19 +12,20 @@ import {
   InputAdornment,
   Divider,
 } from "@mui/material";
+import NextLink from "next/link";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
 import SmartClinicLogo from "../components/SmartClinicLogo";
 import Footer from "../components/Footer";
 
 export default function LoginPage() {
-  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     // Handle login logic here
-    console.log("Login attempt:", { username, password });
+    console.log("Login attempt:", { email, password });
   };
 
   const handleTogglePasswordVisibility = () => {
@@ -85,11 +86,11 @@ export default function LoginPage() {
             onSubmit={handleSubmit}
             sx={{ display: "flex", flexDirection: "column", gap: 2 }}
           >
-            {/* Username or Email Field */}
+            {/* Email Field */}
             <Box sx={{ display: "flex", flexDirection: "column" }}>
               <Typography
                 component="label"
-                htmlFor="username"
+                htmlFor="email"
                 sx={{
                   fontSize: "0.875rem",
                   fontWeight: 500,
@@ -98,14 +99,14 @@ export default function LoginPage() {
                   color: "text.primary",
                 }}
               >
-                Username or Email
+                Email
               </Typography>
               <TextField
-                id="username"
+                id="email"
                 type="text"
-                placeholder="Enter your username or email"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
+                placeholder="Enter your email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 required
                 fullWidth
                 sx={{
@@ -277,6 +278,8 @@ export default function LoginPage() {
             <Button
               fullWidth
               variant="outlined"
+              component={NextLink}
+              href="/register"
               sx={{
                 height: "48px",
                 fontSize: "1rem",
