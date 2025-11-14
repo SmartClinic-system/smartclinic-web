@@ -6,26 +6,25 @@ import {
   Card,
   TextField,
   Button,
-  Checkbox,
-  FormControlLabel,
   Link,
   Typography,
   IconButton,
   InputAdornment,
+  Divider,
 } from "@mui/material";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
 import SmartClinicLogo from "../components/SmartClinicLogo";
+import Footer from "../components/Footer";
 
 export default function LoginPage() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [useOTP, setUseOTP] = useState(false);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     // Handle login logic here
-    console.log("Login attempt:", { username, password, useOTP });
+    console.log("Login attempt:", { username, password });
   };
 
   const handleTogglePasswordVisibility = () => {
@@ -60,11 +59,11 @@ export default function LoginPage() {
         {/* Main Login Form Card */}
         <Card
           sx={{
-            borderRadius: 3,
-            border: "1px solid #DEE2E6",
-            boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
+            borderRadius: 4,
+            border: "1px solid #E2E8F0",
+            boxShadow: "0 12px 32px rgba(15, 23, 42, 0.08)",
             p: 4,
-            backgroundColor: "background.paper",
+            backgroundColor: "#fff",
           }}
         >
           <Typography
@@ -112,6 +111,18 @@ export default function LoginPage() {
                 sx={{
                   "& .MuiOutlinedInput-root": {
                     height: "48px",
+                    borderRadius: "12px",
+                    backgroundColor: "#F7F8FA",
+                    "& fieldset": {
+                      borderColor: "#E2E8F0",
+                    },
+                    "&:hover fieldset": {
+                      borderColor: "#94A3B8",
+                    },
+                    "&.Mui-focused fieldset": {
+                      borderColor: "#005A9C",
+                      borderWidth: "2px",
+                    },
                     "& input": {
                       fontSize: "1rem",
                       fontWeight: 400,
@@ -151,7 +162,18 @@ export default function LoginPage() {
                 sx={{
                   "& .MuiOutlinedInput-root": {
                     height: "48px",
-                    paddingRight: 0,
+                    borderRadius: "12px",
+                    backgroundColor: "#F7F8FA",
+                    "& fieldset": {
+                      borderColor: "#E2E8F0",
+                    },
+                    "&:hover fieldset": {
+                      borderColor: "#94A3B8",
+                    },
+                    "&.Mui-focused fieldset": {
+                      borderColor: "#005A9C",
+                      borderWidth: "2px",
+                    },
                     "& input": {
                       fontSize: "1rem",
                       fontWeight: 400,
@@ -171,15 +193,6 @@ export default function LoginPage() {
                         edge="end"
                         sx={{
                           color: "#6b7280",
-                          borderLeft: "1px solid #DEE2E6",
-                          borderRadius: 0,
-                          borderTopRightRadius: "8px",
-                          borderBottomRightRadius: "8px",
-                          height: "48px",
-                          width: "48px",
-                          "&:hover": {
-                            backgroundColor: "#f3f4f6",
-                          },
                         }}
                       >
                         {showPassword ? <VisibilityOff /> : <Visibility />}
@@ -189,30 +202,6 @@ export default function LoginPage() {
                 }}
               />
             </Box>
-
-            {/* OTP Checkbox */}
-            <FormControlLabel
-              control={
-                <Checkbox
-                  checked={useOTP}
-                  onChange={(e) => setUseOTP(e.target.checked)}
-                  sx={{
-                    "& .MuiSvgIcon-root": {
-                      fontSize: "1.25rem",
-                    },
-                  }}
-                />
-              }
-              label="Use One-Time Password (OTP)"
-              sx={{
-                py: 1,
-                "& .MuiFormControlLabel-label": {
-                  fontSize: "0.875rem",
-                  fontWeight: 400,
-                  color: "text.primary",
-                },
-              }}
-            />
 
             {/* Login Button */}
             <Button
@@ -271,59 +260,43 @@ export default function LoginPage() {
                 Need Help?
               </Link>
             </Box>
+
+            <Divider
+              sx={{
+                my: 3,
+                "&::before, &::after": {
+                  borderColor: "#E2E8F0",
+                },
+                color: "#94A3B8",
+                fontSize: "0.875rem",
+              }}
+            >
+              New to our platform?
+            </Divider>
+
+            <Button
+              fullWidth
+              variant="outlined"
+              sx={{
+                height: "48px",
+                fontSize: "1rem",
+                fontWeight: 600,
+                color: "#005A9C",
+                borderColor: "#BFD6EB",
+                borderWidth: "1.5px",
+                borderRadius: "12px",
+                "&:hover": {
+                  borderColor: "#005A9C",
+                  backgroundColor: "rgba(0, 90, 156, 0.05)",
+                },
+              }}
+            >
+              Sign Up for a New Clinic
+            </Button>
           </Box>
         </Card>
 
-        {/* Footer */}
-        <Box
-          sx={{
-            mt: 4,
-            textAlign: "center",
-            fontSize: "0.875rem",
-            color: "#6b7280",
-          }}
-        >
-          <Typography sx={{ fontSize: "0.875rem", color: "#6b7280" }}>
-            © 2024 ClinicName. All rights reserved.
-          </Typography>
-          <Box
-            sx={{
-              mt: 1,
-              display: "flex",
-              justifyContent: "center",
-              gap: 1,
-              alignItems: "center",
-            }}
-          >
-            <Link
-              href="#"
-              sx={{
-                fontSize: "0.875rem",
-                color: "#6b7280",
-                textDecoration: "none",
-                "&:hover": {
-                  textDecoration: "underline",
-                },
-              }}
-            >
-              Privacy Policy
-            </Link>
-            <span>·</span>
-            <Link
-              href="#"
-              sx={{
-                fontSize: "0.875rem",
-                color: "#6b7280",
-                textDecoration: "none",
-                "&:hover": {
-                  textDecoration: "underline",
-                },
-              }}
-            >
-              Terms of Service
-            </Link>
-          </Box>
-        </Box>
+        <Footer />
       </Box>
     </Box>
   );
