@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import argon2 from "argon2";
 
 import prisma from "@/lib/prisma";
+import { setAdminSessionCookie } from "@/lib/adminSession";
 
 export const runtime = "nodejs";
 
@@ -41,7 +42,9 @@ export async function POST(request: Request) {
       );
     }
 
-    return NextResponse.json({ success: true }, { status: 200 });
+    const response = NextResponse.json({ success: true }, { status: 200 });
+    setAdminSessionCookie(response, admin.id);
+    return response;
   } catch (error) {
     console.error("Admin login error:", error);
     return NextResponse.json(
@@ -50,5 +53,4 @@ export async function POST(request: Request) {
     );
   }
 }
-
 

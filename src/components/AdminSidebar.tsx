@@ -16,8 +16,6 @@ import {
   Dashboard,
   CalendarMonth,
   Groups,
-  Chat,
-  Settings,
   Add,
 } from "@mui/icons-material";
 import SmartClinicLogo from "./SmartClinicLogo";
@@ -41,16 +39,6 @@ const navItems: NavItem[] = [
     label: "Patients",
     path: "/admin/patients",
     icon: <Groups sx={{ fontSize: 20 }} />,
-  },
-  {
-    label: "Messages",
-    path: "/admin/messages",
-    icon: <Chat sx={{ fontSize: 20 }} />,
-  },
-  {
-    label: "Settings",
-    path: "/admin/settings",
-    icon: <Settings sx={{ fontSize: 20 }} />,
   },
 ];
 

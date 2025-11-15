@@ -38,6 +38,7 @@ export default function AdminLoginPage() {
           headers: {
             "Content-Type": "application/json",
           },
+          credentials: "include",
           body: JSON.stringify({
             username: value.username.trim(),
             password: value.password,
