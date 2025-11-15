@@ -1,15 +1,9 @@
 "use client";
 
-import { useState } from "react";
 import {
   Box,
-  AppBar,
-  Toolbar,
   Typography,
   Avatar,
-  IconButton,
-  TextField,
-  InputAdornment,
   Card,
   CardContent,
   Chip,
@@ -20,18 +14,11 @@ import {
   ListItem,
   Button,
 } from "@mui/material";
-import {
-  Search,
-  Notifications,
-  Add,
-  PersonAdd,
-  Sms,
-} from "@mui/icons-material";
+import { Add, PersonAdd, Sms } from "@mui/icons-material";
 import AdminSidebar from "@/components/AdminSidebar";
+import AdminHeader from "@/components/AdminHeader";
 
 export default function AdminDashboardPage() {
-  const [searchValue, setSearchValue] = useState("");
-
   const appointments = [
     {
       id: 1,
@@ -118,77 +105,7 @@ export default function AdminDashboardPage() {
           overflow: "hidden",
         }}
       >
-        {/* Top Navbar */}
-        <AppBar
-          position="sticky"
-          elevation={0}
-          sx={{
-            backgroundColor: "background.paper",
-            borderBottom: "1px solid",
-            borderColor: "divider",
-            zIndex: 10,
-          }}
-        >
-          <Toolbar sx={{ px: 5, py: 1.5, justifyContent: "space-between" }}>
-            <TextField
-              placeholder="Search patients..."
-              value={searchValue}
-              onChange={(e) => setSearchValue(e.target.value)}
-              size="small"
-              sx={{
-                minWidth: 160,
-                maxWidth: 384,
-                width: "100%",
-                "& .MuiOutlinedInput-root": {
-                  height: 40,
-                  backgroundColor: "background.default",
-                  borderRadius: 2,
-                  "& fieldset": {
-                    border: "none",
-                  },
-                  "& .MuiInputBase-input": {
-                    fontSize: "1rem",
-                    padding: "8px 16px",
-                  },
-                },
-              }}
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <Search sx={{ color: "text.secondary", fontSize: 20 }} />
-                  </InputAdornment>
-                ),
-              }}
-            />
-            <Box
-              sx={{
-                display: "flex",
-                alignItems: "center",
-                gap: 2,
-                flex: 1,
-                justifyContent: "flex-end",
-              }}
-            >
-              <IconButton
-                sx={{
-                  width: 40,
-                  height: 40,
-                  backgroundColor: "background.default",
-                  "&:hover": {
-                    backgroundColor: "action.hover",
-                  },
-                }}
-              >
-                <Notifications />
-              </IconButton>
-              <Avatar
-                src="https://lh3.googleusercontent.com/aida-public/AB6AXuC_N1HPDAhGyEvSO8nrsZn90bFvBG4iiaZ6s6YQrs65Wq0MWh7cm3W3-s4B9ZnJpomeBtNhZe1EMnRkdp8Lh22afxVdDppDAkx2VElhX0xDlH2mEqDspk2IKbJSdL1Fa_KFvp67WHD_msw1IhlfnvGzLTcwMM6wlFQtdxUJzxDv3ZVMYdVpMXedbD6bhr167O6L6Kcrof5u6hmKG4fNU5TepFp6x9hhXW_bIGbJllq4HCY1WxBnkKS5e0Zz4Tpfop16G0ENllmSXbM"
-                alt="Profile picture of Dr. Anya"
-                sx={{ width: 40, height: 40 }}
-              />
-            </Box>
-          </Toolbar>
-        </AppBar>
+        <AdminHeader />
 
         {/* Content Area */}
         <Box

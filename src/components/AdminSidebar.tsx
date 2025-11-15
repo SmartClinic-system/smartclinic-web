@@ -20,7 +20,7 @@ import {
 } from "@mui/icons-material";
 import SmartClinicLogo from "./SmartClinicLogo";
 
-const drawerWidth = 256;
+export const ADMIN_DRAWER_WIDTH = 256;
 
 interface NavItem {
   label: string;
@@ -49,10 +49,10 @@ export default function AdminSidebar() {
     <Drawer
       variant="permanent"
       sx={{
-        width: drawerWidth,
+        width: ADMIN_DRAWER_WIDTH,
         flexShrink: 0,
         "& .MuiDrawer-paper": {
-          width: drawerWidth,
+          width: ADMIN_DRAWER_WIDTH,
           boxSizing: "border-box",
           borderRight: "1px solid",
           borderColor: "divider",
