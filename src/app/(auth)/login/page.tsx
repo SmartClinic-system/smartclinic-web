@@ -314,18 +314,19 @@ export default function LoginPage() {
                 Forgot Password?
               </Link>
               <Link
-                href="#"
+            component={NextLink}
+            href="/admin/login"
                 sx={{
                   fontSize: "0.875rem",
                   fontWeight: 500,
-                  color: "#005A9C",
+              color: "#005A9C",
                   textDecoration: "none",
                   "&:hover": {
                     textDecoration: "underline",
                   },
                 }}
               >
-                Need Help?
+            Sign in as Admin
               </Link>
             </Box>
 
@@ -361,7 +362,7 @@ export default function LoginPage() {
                 },
               }}
             >
-              Sign Up for a New Clinic
+              Sign Up
             </Button>
           </Box>
     </Card>
