@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useForm } from "@tanstack/react-form";
 import {
@@ -25,6 +25,41 @@ export default function LoginPage() {
   const [formError, setFormError] = useState<string | null>(null);
   const [formSuccess, setFormSuccess] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    let isMounted = true;
+    const supabase = getSupabaseBrowserClient();
+
+    const redirectIfAuthenticated = async () => {
+      const { data, error } = await supabase.auth.getSession();
+      if (!isMounted) {
+        return;
+      }
+
+      if (!error && data.session) {
+        router.replace("/");
+      }
+    };
+
+    void redirectIfAuthenticated();
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (!isMounted) {
+        return;
+      }
+
+      if (session) {
+        router.replace("/");
+      }
+    });
+
+    return () => {
+      isMounted = false;
+      subscription.unsubscribe();
+    };
+  }, [router]);
 
   const form = useForm({
     defaultValues: {

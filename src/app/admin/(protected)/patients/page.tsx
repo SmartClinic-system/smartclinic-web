@@ -25,7 +25,7 @@ import {
   ChevronRight,
 } from "@mui/icons-material";
 import { DataGrid, GridColDef, GridActionsCellItem } from "@mui/x-data-grid";
-import Sidebar from "@/components/Sidebar";
+import AdminSidebar from "@/components/AdminSidebar";
 
 interface Patient {
   id: string;
@@ -277,7 +277,7 @@ export default function PatientsPage() {
 
   return (
     <Box sx={{ display: "flex", height: "100vh" }}>
-      <Sidebar />
+      <AdminSidebar />
 
       {/* Main Content */}
       <Box

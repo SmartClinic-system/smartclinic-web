@@ -23,7 +23,7 @@ import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { DateCalendar } from "@mui/x-date-pickers/DateCalendar";
 import dayjs, { Dayjs } from "dayjs";
-import Sidebar from "@/components/Sidebar";
+import AdminSidebar from "@/components/AdminSidebar";
 
 interface Appointment {
   id: number;
@@ -152,7 +152,7 @@ export default function AppointmentsPage() {
 
   return (
     <Box sx={{ display: "flex", height: "100vh" }}>
-      <Sidebar />
+      <AdminSidebar />
 
       {/* Main Content */}
       <Box

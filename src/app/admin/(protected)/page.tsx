@@ -27,9 +27,9 @@ import {
   PersonAdd,
   Sms,
 } from "@mui/icons-material";
-import Sidebar from "@/components/Sidebar";
+import AdminSidebar from "@/components/AdminSidebar";
 
-export default function DashboardPage() {
+export default function AdminDashboardPage() {
   const [searchValue, setSearchValue] = useState("");
 
   const appointments = [
@@ -106,7 +106,7 @@ export default function DashboardPage() {
 
   return (
     <Box sx={{ display: "flex", height: "100vh" }}>
-      <Sidebar />
+      <AdminSidebar />
 
       {/* Main Content */}
       <Box
@@ -542,3 +542,5 @@ export default function DashboardPage() {
     </Box>
   );
 }
+
+
