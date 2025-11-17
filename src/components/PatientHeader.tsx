@@ -16,8 +16,6 @@ import {
 import { Logout } from "@mui/icons-material";
 import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
 
-const PATIENT_DRAWER_WIDTH = 240;
-
 export default function PatientHeader() {
   const router = useRouter();
   const [isSigningOut, setIsSigningOut] = useState(false);
@@ -64,11 +62,8 @@ export default function PatientHeader() {
         borderBottom: "1px solid",
         borderColor: "divider",
         backgroundColor: "background.paper",
-        width: {
-          xs: "100%",
-          sm: `calc(100% - ${PATIENT_DRAWER_WIDTH}px)`,
-        },
-        ml: { xs: 0, sm: `${PATIENT_DRAWER_WIDTH}px` },
+        width: "100%",
+        ml: 0,
       }}
     >
       <Toolbar
