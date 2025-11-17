@@ -5,19 +5,39 @@ import { useRouter } from "next/navigation";
 import { Box, CircularProgress } from "@mui/material";
 import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
 import PatientHeader from "@/components/PatientHeader";
+import {
+  usePatientAuthStore,
+  type PatientAuthData,
+} from "@/stores/patientAuthStore";
 
-export default function ProtectedLayout({
-  children,
-}: {
-  children: ReactNode;
-}) {
+export default function ProtectedLayout({ children }: { children: ReactNode }) {
   const router = useRouter();
   const [isChecking, setIsChecking] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const setAuthData = usePatientAuthStore((state) => state.setAuthData);
+  const clearSession = usePatientAuthStore((state) => state.clearSession);
 
   useEffect(() => {
     let isMounted = true;
     const supabase = getSupabaseBrowserClient();
+
+    const handleAuthenticated = (data: PatientAuthData) => {
+      if (!data.session) {
+        handleUnauthenticated();
+        return;
+      }
+
+      setAuthData(data);
+      setIsAuthenticated(true);
+      setIsChecking(false);
+    };
+
+    const handleUnauthenticated = () => {
+      clearSession();
+      setIsAuthenticated(false);
+      setIsChecking(false);
+      router.replace("/login");
+    };
 
     const evaluateSession = async () => {
       const { data, error } = await supabase.auth.getSession();
@@ -26,14 +46,11 @@ export default function ProtectedLayout({
       }
 
       if (error || !data.session) {
-        setIsAuthenticated(false);
-        router.replace("/login");
-        setIsChecking(false);
+        handleUnauthenticated();
         return;
       }
 
-      setIsAuthenticated(true);
-      setIsChecking(false);
+      handleAuthenticated(data);
     };
 
     void evaluateSession();
@@ -46,21 +63,18 @@ export default function ProtectedLayout({
       }
 
       if (!session) {
-        setIsAuthenticated(false);
-        setIsChecking(false);
-        router.replace("/login");
+        handleUnauthenticated();
         return;
       }
 
-      setIsAuthenticated(true);
-      setIsChecking(false);
+      handleAuthenticated({ session });
     });
 
     return () => {
       isMounted = false;
       subscription.unsubscribe();
     };
-  }, [router]);
+  }, [router, clearSession, setAuthData]);
 
   if (isChecking) {
     return (
