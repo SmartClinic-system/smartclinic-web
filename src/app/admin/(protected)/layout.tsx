@@ -2,6 +2,7 @@ import { ReactNode } from "react";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 
+import AdminProtectedLayoutContent from "@/components/AdminProtectedLayoutContent";
 import { SESSION_COOKIE_NAME, verifySessionToken } from "@/lib/adminSession";
 
 export const dynamic = "force-dynamic";
@@ -20,5 +21,7 @@ export default async function AdminProtectedLayout({
     redirect("/admin/login");
   }
 
-  return <>{children}</>;
+  return (
+    <AdminProtectedLayoutContent>{children}</AdminProtectedLayoutContent>
+  );
 }
