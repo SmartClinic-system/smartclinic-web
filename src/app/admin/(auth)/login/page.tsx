@@ -10,10 +10,12 @@ import {
   Card,
   IconButton,
   InputAdornment,
+  Link,
   TextField,
   Typography,
 } from "@mui/material";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
+import NextLink from "next/link";
 
 export default function AdminLoginPage() {
   const router = useRouter();
@@ -267,6 +269,46 @@ export default function AdminLoginPage() {
         >
           {isSubmitting ? "Signing In..." : "Admin Sign In"}
         </Button>
+
+        {/* Secondary Links */}
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            pt: 1,
+          }}
+        >
+          <Link
+            href="#"
+            sx={{
+              fontSize: "0.875rem",
+              fontWeight: 500,
+              color: "#005A9C",
+              textDecoration: "none",
+              "&:hover": {
+                textDecoration: "underline",
+              },
+            }}
+          >
+            Forgot Password?
+          </Link>
+          <Link
+            component={NextLink}
+            href="/login"
+            sx={{
+              fontSize: "0.875rem",
+              fontWeight: 500,
+              color: "#005A9C",
+              textDecoration: "none",
+              "&:hover": {
+                textDecoration: "underline",
+              },
+            }}
+          >
+            Sign in as Patient
+          </Link>
+        </Box>
       </Box>
     </Card>
   );
