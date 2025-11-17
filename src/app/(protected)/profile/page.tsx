@@ -39,7 +39,7 @@ export default function PatientProfilePage() {
     defaultValues: {
       firstName: profile?.firstName ?? "",
       lastName: profile?.lastName ?? "",
-      dateOfBirth: profile?.dateOfBirth?.substring(0, 10) ?? "",
+      dateOfBirth: profile?.dateOfBirth ? dayjs(profile.dateOfBirth) : null,
       gender: profile?.gender ?? "",
       phoneNumber: profile?.phoneNumber ?? "",
       email: profile?.email ?? emailFromSession,
@@ -63,7 +63,7 @@ export default function PatientProfilePage() {
           body: JSON.stringify({
             patientId: session.user.id,
             ...value,
-            dateOfBirth: new Date(value.dateOfBirth).toISOString(),
+            dateOfBirth: value.dateOfBirth?.format("YYYY-MM-DD") ?? "",
           }),
         });
 
@@ -152,14 +152,9 @@ export default function PatientProfilePage() {
                   {(field) => (
                     <DatePicker
                       label="Date of Birth"
-                      value={
-                        field.state.value ? dayjs(field.state.value) : null
-                      }
-                      onChange={(date) =>
-                        field.handleChange(
-                          date ? date.format("YYYY-MM-DD") : ""
-                        )
-                      }
+                      value={field.state.value}
+                      onChange={(date) => field.handleChange(date)}
+                      format="MM/DD/YYYY"
                       slotProps={{
                         textField: {
                           required: true,
@@ -217,10 +212,13 @@ export default function PatientProfilePage() {
                       label="Email"
                       type="email"
                       value={field.state.value}
-                      InputProps={{
-                        readOnly: true,
-                        disabled: true,
+                      slotProps={{
+                        input: {
+                          readOnly: true,
+                          disabled: true,
+                        },
                       }}
+                      required
                       fullWidth
                     />
                   )}

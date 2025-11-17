@@ -13,6 +13,7 @@ import {
   Typography,
   Link,
 } from "@mui/material";
+import { AuthApiError } from "@supabase/supabase-js";
 import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
 
 const sharedFieldStyles = {
@@ -65,6 +66,28 @@ export default function RegisterPage() {
       setIsSubmitting(true);
 
       try {
+        const normalizedEmail = value.email.trim().toLowerCase();
+
+        const existsResponse = await fetch(
+          `/api/patient/email-exists?email=${encodeURIComponent(
+            normalizedEmail
+          )}`
+        );
+
+        if (!existsResponse.ok) {
+          throw new Error("Unable to verify email. Please try again.");
+        }
+
+        const { exists } = await existsResponse.json();
+
+        if (exists) {
+          setFormError(
+            "An account with this email already exists. Please sign in instead."
+          );
+          setIsSubmitting(false);
+          return;
+        }
+
         const supabase = getSupabaseBrowserClient();
         const emailRedirectTo =
           typeof window !== "undefined"
@@ -72,7 +95,7 @@ export default function RegisterPage() {
             : undefined;
 
         const { data, error } = await supabase.auth.signUp({
-          email: value.email.trim(),
+          email: normalizedEmail,
           password: value.password,
           options: {
             emailRedirectTo,
@@ -91,14 +114,19 @@ export default function RegisterPage() {
           return;
         }
 
-        setFormSuccess(
-          "Check your inbox to confirm your email, then sign in."
-        );
+        setFormSuccess("Check your inbox to confirm your email, then sign in.");
       } catch (error) {
-        const message =
-          error instanceof Error
-            ? error.message
-            : "Unable to create an account. Please try again.";
+        let message = "Unable to create an account. Please try again.";
+
+        if (error instanceof AuthApiError && error.status === 400) {
+          message =
+            error.message === "User already registered"
+              ? "This email is already registered. Please sign in instead."
+              : error.message;
+        } else if (error instanceof Error) {
+          message = error.message;
+        }
+
         setFormError(message);
       } finally {
         setIsSubmitting(false);
@@ -116,178 +144,176 @@ export default function RegisterPage() {
         backgroundColor: "#fff",
       }}
     >
-          <Typography
-            variant="h4"
-            sx={{
-              fontWeight: 700,
-              fontSize: "1.875rem",
-              lineHeight: 1.2,
-              textAlign: "center",
-              mb: 3,
-              color: "text.primary",
-            }}
-          >
-            Create Patient Account
-          </Typography>
+      <Typography
+        variant="h4"
+        sx={{
+          fontWeight: 700,
+          fontSize: "1.875rem",
+          lineHeight: 1.2,
+          textAlign: "center",
+          mb: 3,
+          color: "text.primary",
+        }}
+      >
+        Create Patient Account
+      </Typography>
 
-          <Box
-            component="form"
-            onSubmit={(e) => {
-              e.preventDefault();
-              form.handleSubmit();
-            }}
-            sx={{ display: "flex", flexDirection: "column", gap: 2 }}
-          >
-            {formError && (
-              <Alert severity="error" sx={{ mb: 1 }}>
-                {formError}
-              </Alert>
-            )}
-            {formSuccess && (
-              <Alert severity="success" sx={{ mb: 1 }}>
-                {formSuccess}
-              </Alert>
-            )}
+      <Box
+        component="form"
+        onSubmit={(e) => {
+          e.preventDefault();
+          form.handleSubmit();
+        }}
+        sx={{ display: "flex", flexDirection: "column", gap: 2 }}
+      >
+        {formError && (
+          <Alert severity="error" sx={{ mb: 1 }}>
+            {formError}
+          </Alert>
+        )}
+        {formSuccess && (
+          <Alert severity="success" sx={{ mb: 1 }}>
+            {formSuccess}
+          </Alert>
+        )}
 
-            <form.Field name="email">
-              {(field) => (
-                <Box sx={{ display: "flex", flexDirection: "column" }}>
-                  <Typography
-                    component="label"
-                    htmlFor="email"
-                    sx={{
-                      fontSize: "0.875rem",
-                      fontWeight: 500,
-                      lineHeight: "normal",
-                      pb: 1,
-                      color: "text.primary",
-                    }}
-                  >
-                    Email Address
-                  </Typography>
-                  <TextField
-                    id="email"
-                    type="email"
-                    placeholder="Enter your email address"
-                    value={field.state.value}
-                    onChange={(e) => field.handleChange(e.target.value)}
-                    onBlur={field.handleBlur}
-                    required
-                    fullWidth
-                    sx={sharedFieldStyles}
-                  />
-                </Box>
-              )}
-            </form.Field>
-
-            <form.Field name="password">
-              {(field) => (
-                <Box sx={{ display: "flex", flexDirection: "column" }}>
-                  <Typography
-                    component="label"
-                    htmlFor="password"
-                    sx={{
-                      fontSize: "0.875rem",
-                      fontWeight: 500,
-                      lineHeight: "normal",
-                      pb: 1,
-                      color: "text.primary",
-                    }}
-                  >
-                    Password
-                  </Typography>
-                  <TextField
-                    id="password"
-                    type="password"
-                    placeholder="Create a strong password"
-                    value={field.state.value}
-                    onChange={(e) => field.handleChange(e.target.value)}
-                    onBlur={field.handleBlur}
-                    required
-                    fullWidth
-                    sx={sharedFieldStyles}
-                  />
-                </Box>
-              )}
-            </form.Field>
-
-            <form.Field name="confirmPassword">
-              {(field) => (
-                <Box sx={{ display: "flex", flexDirection: "column" }}>
-                  <Typography
-                    component="label"
-                    htmlFor="confirm-password"
-                    sx={{
-                      fontSize: "0.875rem",
-                      fontWeight: 500,
-                      lineHeight: "normal",
-                      pb: 1,
-                      color: "text.primary",
-                    }}
-                  >
-                    Confirm Password
-                  </Typography>
-                  <TextField
-                    id="confirm-password"
-                    type="password"
-                    placeholder="Confirm your password"
-                    value={field.state.value}
-                    onChange={(e) => field.handleChange(e.target.value)}
-                    onBlur={field.handleBlur}
-                    required
-                    fullWidth
-                    sx={sharedFieldStyles}
-                  />
-                </Box>
-              )}
-            </form.Field>
-
-            <Button
-              type="submit"
-              fullWidth
-              variant="contained"
-              disabled={isSubmitting}
-              sx={{
-                height: "48px",
-                fontSize: "1rem",
-                fontWeight: 600,
-                backgroundColor: "#005A9C",
-                "&:hover": {
-                  backgroundColor: "rgba(0, 90, 156, 0.9)",
-                },
-                mt: 1,
-              }}
-            >
-              {isSubmitting ? "Creating Account..." : "Sign Up"}
-            </Button>
-
-            <Typography
-              sx={{
-                textAlign: "center",
-                fontSize: "0.95rem",
-                color: "#6b7280",
-                mt: 1,
-              }}
-            >
-              Already have an account?{" "}
-              <Link
-                component={NextLink}
-                href="/login"
+        <form.Field name="email">
+          {(field) => (
+            <Box sx={{ display: "flex", flexDirection: "column" }}>
+              <Typography
+                component="label"
+                htmlFor="email"
                 sx={{
-                  fontWeight: 600,
-                  color: "#005A9C",
-                  textDecoration: "none",
-                  "&:hover": {
-                    textDecoration: "underline",
-                  },
+                  fontSize: "0.875rem",
+                  fontWeight: 500,
+                  lineHeight: "normal",
+                  pb: 1,
+                  color: "text.primary",
                 }}
               >
-                Sign In
-              </Link>
-            </Typography>
-          </Box>
+                Email Address
+              </Typography>
+              <TextField
+                id="email"
+                type="email"
+                placeholder="Enter your email address"
+                value={field.state.value}
+                onChange={(e) => field.handleChange(e.target.value)}
+                onBlur={field.handleBlur}
+                required
+                fullWidth
+                sx={sharedFieldStyles}
+              />
+            </Box>
+          )}
+        </form.Field>
+
+        <form.Field name="password">
+          {(field) => (
+            <Box sx={{ display: "flex", flexDirection: "column" }}>
+              <Typography
+                component="label"
+                htmlFor="password"
+                sx={{
+                  fontSize: "0.875rem",
+                  fontWeight: 500,
+                  lineHeight: "normal",
+                  pb: 1,
+                  color: "text.primary",
+                }}
+              >
+                Password
+              </Typography>
+              <TextField
+                id="password"
+                type="password"
+                placeholder="Create a strong password"
+                value={field.state.value}
+                onChange={(e) => field.handleChange(e.target.value)}
+                onBlur={field.handleBlur}
+                required
+                fullWidth
+                sx={sharedFieldStyles}
+              />
+            </Box>
+          )}
+        </form.Field>
+
+        <form.Field name="confirmPassword">
+          {(field) => (
+            <Box sx={{ display: "flex", flexDirection: "column" }}>
+              <Typography
+                component="label"
+                htmlFor="confirm-password"
+                sx={{
+                  fontSize: "0.875rem",
+                  fontWeight: 500,
+                  lineHeight: "normal",
+                  pb: 1,
+                  color: "text.primary",
+                }}
+              >
+                Confirm Password
+              </Typography>
+              <TextField
+                id="confirm-password"
+                type="password"
+                placeholder="Confirm your password"
+                value={field.state.value}
+                onChange={(e) => field.handleChange(e.target.value)}
+                onBlur={field.handleBlur}
+                required
+                fullWidth
+                sx={sharedFieldStyles}
+              />
+            </Box>
+          )}
+        </form.Field>
+
+        <Button
+          type="submit"
+          fullWidth
+          variant="contained"
+          disabled={isSubmitting}
+          sx={{
+            height: "48px",
+            fontSize: "1rem",
+            fontWeight: 600,
+            backgroundColor: "#005A9C",
+            "&:hover": {
+              backgroundColor: "rgba(0, 90, 156, 0.9)",
+            },
+            mt: 1,
+          }}
+        >
+          {isSubmitting ? "Creating Account..." : "Sign Up"}
+        </Button>
+
+        <Typography
+          sx={{
+            textAlign: "center",
+            fontSize: "0.95rem",
+            color: "#6b7280",
+            mt: 1,
+          }}
+        >
+          Already have an account?{" "}
+          <Link
+            component={NextLink}
+            href="/login"
+            sx={{
+              fontWeight: 600,
+              color: "#005A9C",
+              textDecoration: "none",
+              "&:hover": {
+                textDecoration: "underline",
+              },
+            }}
+          >
+            Sign In
+          </Link>
+        </Typography>
+      </Box>
     </Card>
   );
 }
-
-

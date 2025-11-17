@@ -74,6 +74,8 @@ export async function POST(request: Request) {
       );
     }
 
+    const normalizedEmail = email.trim().toLowerCase();
+
     const profileDelegate = (prisma as any).patientProfile;
     const profile = await profileDelegate.upsert({
       where: { patientId },
@@ -84,7 +86,7 @@ export async function POST(request: Request) {
         dateOfBirth: parsedDate,
         gender,
         phoneNumber,
-        email,
+        email: normalizedEmail,
       },
       update: {
         firstName,
@@ -92,7 +94,7 @@ export async function POST(request: Request) {
         dateOfBirth: parsedDate,
         gender,
         phoneNumber,
-        email,
+        email: normalizedEmail,
       },
     });
 
