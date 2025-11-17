@@ -1,30 +1,35 @@
 "use client";
 
-import { Box, Typography, Button } from "@mui/material";
+import { Box, Typography, Button, Paper } from "@mui/material";
 import NextLink from "next/link";
-import PatientSidebar from "@/components/PatientSidebar";
 
 export default function PatientAppointmentsPlaceholder() {
   return (
-    <Box sx={{ display: "flex", minHeight: "100vh" }}>
-      <PatientSidebar />
-      <Box
-        component="main"
+    <Box
+      sx={{
+        width: "100%",
+        minHeight: "calc(100vh - 160px)",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+      }}
+    >
+      <Paper
+        elevation={0}
         sx={{
-          flex: 1,
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          justifyContent: "center",
           textAlign: "center",
-          gap: 2,
-          p: 4,
+          p: { xs: 3, md: 5 },
+          borderRadius: 4,
+          border: "1px solid",
+          borderColor: "divider",
+          maxWidth: 600,
+          width: "100%",
         }}
       >
-        <Typography variant="h3" sx={{ fontWeight: 700 }}>
+        <Typography variant="h4" sx={{ fontWeight: 700, mb: 2 }}>
           Appointments coming soon
         </Typography>
-        <Typography sx={{ color: "text.secondary", maxWidth: 520 }}>
+        <Typography sx={{ color: "text.secondary", mb: 3 }}>
           We&apos;re building a streamlined experience to view upcoming visits,
           confirm slots, and request new appointments. Please check back later
           while we finalize this feature.
@@ -32,7 +37,7 @@ export default function PatientAppointmentsPlaceholder() {
         <Button component={NextLink} href="/" variant="outlined">
           Return to dashboard
         </Button>
-      </Box>
+      </Paper>
     </Box>
   );
 }
