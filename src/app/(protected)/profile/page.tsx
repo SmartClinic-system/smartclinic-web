@@ -1,7 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useMemo, useState } from "react";
 import {
   Alert,
   Box,
@@ -22,10 +21,8 @@ import { usePatientAuthStore } from "@/stores/patientAuthStore";
 const genderOptions = ["Male", "Female", "Other", "Prefer not to say"];
 
 export default function PatientProfilePage() {
-  const router = useRouter();
   const session = usePatientAuthStore((state) => state.session);
   const profile = usePatientAuthStore((state) => state.profile);
-  const pendingRoute = usePatientAuthStore((state) => state.pendingRoute);
   const setProfile = usePatientAuthStore((state) => state.setProfile);
   const setPendingRoute = usePatientAuthStore((state) => state.setPendingRoute);
 
