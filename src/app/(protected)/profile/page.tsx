@@ -40,12 +40,12 @@ export default function PatientProfilePage() {
 
   const form = useForm({
     defaultValues: {
-      firstName: "",
-      lastName: "",
-      dateOfBirth: "",
-      gender: "",
-      phoneNumber: "",
-      email: emailFromSession,
+      firstName: profile?.firstName ?? "",
+      lastName: profile?.lastName ?? "",
+      dateOfBirth: profile?.dateOfBirth?.substring(0, 10) ?? "",
+      gender: profile?.gender ?? "",
+      phoneNumber: profile?.phoneNumber ?? "",
+      email: profile?.email ?? emailFromSession,
     },
     onSubmit: async ({ value }) => {
       if (!session?.user?.id) {
@@ -79,7 +79,6 @@ export default function PatientProfilePage() {
         setProfile(data.profile);
         setPendingRoute(null);
         setSuccess("Profile saved successfully.");
-        router.replace(pendingRoute ?? "/");
       } catch (submitError) {
         const message =
           submitError instanceof Error
@@ -91,33 +90,6 @@ export default function PatientProfilePage() {
       }
     },
   });
-
-  useEffect(() => {
-    form.setFieldValue("email", emailFromSession);
-  }, [emailFromSession, form]);
-
-  useEffect(() => {
-    if (!profile) {
-      form.reset({
-        firstName: "",
-        lastName: "",
-        dateOfBirth: "",
-        gender: "",
-        phoneNumber: "",
-        email: emailFromSession,
-      });
-      return;
-    }
-
-    form.reset({
-      firstName: profile.firstName,
-      lastName: profile.lastName,
-      dateOfBirth: profile.dateOfBirth.substring(0, 10),
-      gender: profile.gender,
-      phoneNumber: profile.phoneNumber,
-      email: profile.email,
-    });
-  }, [profile, form, emailFromSession]);
 
   return (
     <LocalizationProvider dateAdapter={AdapterDayjs}>
@@ -250,7 +222,7 @@ export default function PatientProfilePage() {
                       value={field.state.value}
                       InputProps={{
                         readOnly: true,
-                        style: { color: "text.secondary" },
+                        disabled: true,
                       }}
                       fullWidth
                     />

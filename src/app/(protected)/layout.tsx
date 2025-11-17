@@ -23,6 +23,7 @@ export default function ProtectedLayout({ children }: { children: ReactNode }) {
   );
   const setPendingRoute = usePatientAuthStore((state) => state.setPendingRoute);
   const pendingRoute = usePatientAuthStore((state) => state.pendingRoute);
+  const currentProfile = usePatientAuthStore((state) => state.profile);
 
   useEffect(() => {
     let isMounted = true;
@@ -48,6 +49,10 @@ export default function ProtectedLayout({ children }: { children: ReactNode }) {
     };
 
     const ensureProfile = async (patientId: string) => {
+      if (currentProfile?.patientId === patientId) {
+        return true;
+      }
+
       setProfileLoading(true);
       try {
         const response = await fetch(
@@ -124,6 +129,7 @@ export default function ProtectedLayout({ children }: { children: ReactNode }) {
     pendingRoute,
     pathname,
     setPendingRoute,
+    currentProfile?.patientId,
   ]);
 
   if (isChecking) {
