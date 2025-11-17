@@ -12,12 +12,7 @@ import {
   ListItemText,
   Button,
 } from "@mui/material";
-import {
-  Dashboard,
-  CalendarMonth,
-  Groups,
-  Add,
-} from "@mui/icons-material";
+import { Dashboard, CalendarMonth, Groups, Add } from "@mui/icons-material";
 import SmartClinicLogo from "./SmartClinicLogo";
 
 export const ADMIN_DRAWER_WIDTH = 256;
@@ -29,7 +24,11 @@ interface NavItem {
 }
 
 const navItems: NavItem[] = [
-  { label: "Dashboard", path: "/admin", icon: <Dashboard sx={{ fontSize: 20 }} /> },
+  {
+    label: "Dashboard",
+    path: "/admin",
+    icon: <Dashboard sx={{ fontSize: 20 }} />,
+  },
   {
     label: "Calendar",
     path: "/admin/calendar",
@@ -70,7 +69,7 @@ export default function AdminSidebar() {
 
       <List sx={{ flex: 1, px: 0, mt: 2 }}>
         {navItems.map((item) => {
-          const isActive = pathname.startsWith(item.path);
+          const isActive = pathname === item.path;
           return (
             <ListItem key={item.path} disablePadding>
               <ListItemButton
@@ -129,5 +128,3 @@ export default function AdminSidebar() {
     </Drawer>
   );
 }
-
-
