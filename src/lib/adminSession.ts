@@ -13,7 +13,7 @@ function getSessionSecret() {
   const secret = process.env.ADMIN_SESSION_SECRET;
   if (!secret) {
     throw new Error(
-      "ADMIN_SESSION_SECRET is not set. Add it to your environment variables to secure admin routes.",
+      "ADMIN_SESSION_SECRET is not set. Add it to your environment variables to secure admin routes."
     );
   }
   return secret;
@@ -61,7 +61,7 @@ export function createSessionToken(adminId: string) {
 }
 
 export function verifySessionToken(
-  token: string | undefined,
+  token: string | undefined
 ): SessionPayload | null {
   if (!token) {
     return null;
@@ -116,5 +116,3 @@ export function clearAdminSessionCookie(response: NextResponse) {
 }
 
 export { SESSION_COOKIE_NAME };
-
-

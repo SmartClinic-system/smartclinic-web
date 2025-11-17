@@ -18,7 +18,7 @@ export async function POST(request: Request) {
     ) {
       return NextResponse.json(
         { error: "Username and password are required." },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -29,7 +29,7 @@ export async function POST(request: Request) {
     if (!admin) {
       return NextResponse.json(
         { error: "Invalid username or password." },
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -38,7 +38,7 @@ export async function POST(request: Request) {
     if (!passwordMatches) {
       return NextResponse.json(
         { error: "Invalid username or password." },
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -49,8 +49,7 @@ export async function POST(request: Request) {
     console.error("Admin login error:", error);
     return NextResponse.json(
       { error: "Unable to process login request." },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
-

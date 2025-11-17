@@ -1,49 +1,26 @@
-import { Box } from "@mui/material";
 import type { ReactNode } from "react";
+import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
 
-import Footer from "@/components/Footer";
-import SmartClinicLogo from "@/components/SmartClinicLogo";
+import AdminAuthLayoutContent from "@/components/AdminAuthLayoutContent";
+import { SESSION_COOKIE_NAME, verifySessionToken } from "@/lib/adminSession";
 
-export default function AdminAuthLayout({
+export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
+
+export default async function AdminAuthLayout({
   children,
 }: {
   children: ReactNode;
 }) {
-  return (
-    <Box
-      sx={{
-        minHeight: "100vh",
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        justifyContent: "center",
-        backgroundColor: "#F8F9FA",
-        p: 2,
-      }}
-    >
-      <Box
-        sx={{
-          width: "100%",
-          maxWidth: "28rem",
-          display: "flex",
-          flexDirection: "column",
-          gap: 4,
-        }}
-      >
-        <Box
-          sx={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-        >
-          <SmartClinicLogo size="medium" />
-        </Box>
-        {children}
-        <Footer />
-      </Box>
-    </Box>
-  );
+  const cookieStore = await cookies();
+  const token = cookieStore.get(SESSION_COOKIE_NAME)?.value;
+  const session = verifySessionToken(token);
+
+  // If admin is already authenticated, redirect to admin dashboard
+  if (session) {
+    redirect("/admin");
+  }
+
+  return <AdminAuthLayoutContent>{children}</AdminAuthLayoutContent>;
 }
-
-
