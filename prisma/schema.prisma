@@ -9,8 +9,8 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
   directUrl = env("DIRECT_URL")
 }
 
@@ -26,4 +26,17 @@ model Admin {
 enum Role {
   ADMIN
   STAFF
+}
+
+model PatientProfile {
+  id          String   @id @default(uuid())
+  patientId   String   @unique
+  firstName   String
+  lastName    String
+  dateOfBirth DateTime
+  gender      String
+  phoneNumber String
+  email       String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }
