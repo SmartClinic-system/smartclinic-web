@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import Link from "next/link";
 import {
   Box,
   Typography,
@@ -85,7 +86,17 @@ export default function PatientsPageClient({
       flex: 1,
       minWidth: 200,
       renderCell: (params) => (
-        <Typography sx={{ fontWeight: 500, fontSize: "0.9rem" }}>
+        <Typography
+          component={Link}
+          href={`/admin/patients/${params.row.id}`}
+          sx={{
+            fontWeight: 500,
+            fontSize: "0.9rem",
+            textDecoration: "none",
+            color: "text.primary",
+            "&:hover": { color: "primary.main" },
+          }}
+        >
           {params.value}
         </Typography>
       ),
@@ -107,6 +118,24 @@ export default function PatientsPageClient({
       headerName: "Email",
       flex: 1,
       minWidth: 220,
+    },
+    {
+      field: "actions",
+      headerName: "",
+      width: 140,
+      sortable: false,
+      filterable: false,
+      renderCell: (params) => (
+        <Button
+          component={Link}
+          href={`/admin/patients/${params.row.id}`}
+          variant="outlined"
+          size="small"
+          sx={{ textTransform: "none", fontWeight: 600 }}
+        >
+          View
+        </Button>
+      ),
     },
   ];
 
