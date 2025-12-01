@@ -28,15 +28,237 @@ enum Role {
   STAFF
 }
 
+enum EncounterType {
+  ROUTINE
+  FOLLOW_UP
+  EMERGENCY
+  TELEHEALTH
+  INPATIENT
+  OUTPATIENT
+}
+
+enum EncounterStatus {
+  SCHEDULED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+enum DiagnosisStatus {
+  ACTIVE
+  CHRONIC
+  RESOLVED
+  RULED_OUT
+}
+
+enum TreatmentStatus {
+  PLANNED
+  ACTIVE
+  ON_HOLD
+  COMPLETED
+  CANCELLED
+}
+
+enum MedicationRoute {
+  ORAL
+  INTRAVENOUS
+  INTRAMUSCULAR
+  SUBCUTANEOUS
+  TOPICAL
+  INHALATION
+  OTHER
+}
+
+enum LabStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+  ABNORMAL
+  CANCELLED
+}
+
+enum SeverityLevel {
+  MILD
+  MODERATE
+  SEVERE
+  LIFE_THREATENING
+}
+
+enum VitalType {
+  HEART_RATE
+  BLOOD_PRESSURE_SYSTOLIC
+  BLOOD_PRESSURE_DIASTOLIC
+  RESPIRATION_RATE
+  TEMPERATURE
+  OXYGEN_SATURATION
+  BLOOD_GLUCOSE
+  WEIGHT
+  HEIGHT
+}
+
 model PatientProfile {
-  id          String   @id @default(uuid())
-  patientId   String   @unique
-  firstName   String
-  lastName    String
-  dateOfBirth DateTime
-  gender      String
-  phoneNumber String
-  email       String   @unique
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id               String                   @id @default(uuid())
+  patientId        String                   @unique
+  firstName        String
+  lastName         String
+  dateOfBirth      DateTime
+  gender           String
+  phoneNumber      String
+  email            String                   @unique
+  createdAt        DateTime                 @default(now())
+  updatedAt        DateTime                 @updatedAt
+  medicalRecord    ElectronicMedicalRecord?
+  encounters       Encounter[]
+  diagnoses        Diagnosis[]
+  treatmentPlans   TreatmentPlan[]
+  medicationOrders MedicationOrder[]
+  vitals           VitalSign[]
+  labResults       LabResult[]
+  allergies        Allergy[]
+}
+
+model ElectronicMedicalRecord {
+  id                String         @id @default(uuid())
+  patientId         String         @unique
+  summary           String?
+  primaryProvider   String?
+  preferredPharmacy String?
+  lastReview        DateTime?
+  patient           PatientProfile @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  allergies         Allergy[]
+  encounters        Encounter[]
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+}
+
+model Encounter {
+  id              String                  @id @default(uuid())
+  medicalRecordId String
+  patientId       String
+  type            EncounterType
+  status          EncounterStatus         @default(SCHEDULED)
+  reason          String?
+  location        String?
+  startTime       DateTime
+  endTime         DateTime?
+  notes           String?
+  patient         PatientProfile          @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  medicalRecord   ElectronicMedicalRecord @relation(fields: [medicalRecordId], references: [id], onDelete: Cascade)
+  diagnoses       Diagnosis[]
+  treatmentPlans  TreatmentPlan[]
+  createdAt       DateTime                @default(now())
+  updatedAt       DateTime                @updatedAt
+
+  @@index([patientId, startTime])
+}
+
+model Diagnosis {
+  id             String          @id @default(uuid())
+  patientId      String
+  encounterId    String?
+  code           String
+  description    String?
+  status         DiagnosisStatus @default(ACTIVE)
+  onsetDate      DateTime?
+  resolvedDate   DateTime?
+  patient        PatientProfile  @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  encounter      Encounter?      @relation(fields: [encounterId], references: [id], onDelete: SetNull)
+  treatmentPlans TreatmentPlan[]
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+
+  @@index([patientId, status])
+}
+
+model TreatmentPlan {
+  id               String            @id @default(uuid())
+  patientId        String
+  encounterId      String?
+  diagnosisId      String?
+  status           TreatmentStatus   @default(PLANNED)
+  goal             String?
+  startDate        DateTime?
+  endDate          DateTime?
+  notes            String?
+  patient          PatientProfile    @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  encounter        Encounter?        @relation(fields: [encounterId], references: [id], onDelete: SetNull)
+  diagnosis        Diagnosis?        @relation(fields: [diagnosisId], references: [id], onDelete: SetNull)
+  medicationOrders MedicationOrder[]
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+
+  @@index([patientId, status])
+}
+
+model MedicationOrder {
+  id                  String          @id @default(uuid())
+  patientId           String
+  treatmentPlanId     String?
+  medicationName      String
+  dosage              String?
+  route               MedicationRoute @default(ORAL)
+  frequency           String?
+  startDate           DateTime?
+  endDate             DateTime?
+  prescribingProvider String?
+  instructions        String?
+  patient             PatientProfile  @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  treatmentPlan       TreatmentPlan?  @relation(fields: [treatmentPlanId], references: [id], onDelete: SetNull)
+  createdAt           DateTime        @default(now())
+  updatedAt           DateTime        @updatedAt
+
+  @@index([patientId, medicationName])
+}
+
+model VitalSign {
+  id         String         @id @default(uuid())
+  patientId  String
+  type       VitalType
+  value      Float
+  unit       String
+  recordedAt DateTime       @default(now())
+  recordedBy String?
+  patient    PatientProfile @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  createdAt  DateTime       @default(now())
+  updatedAt  DateTime       @updatedAt
+
+  @@index([patientId, recordedAt])
+}
+
+model LabResult {
+  id               String         @id @default(uuid())
+  patientId        String
+  testName         String
+  status           LabStatus      @default(PENDING)
+  resultValue      String?
+  units            String?
+  referenceRange   String?
+  collectedAt      DateTime?
+  resultedAt       DateTime?
+  orderingProvider String?
+  notes            String?
+  patient          PatientProfile @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+
+  @@index([patientId, status])
+  @@index([patientId, collectedAt])
+}
+
+model Allergy {
+  id              String                  @id @default(uuid())
+  patientId       String
+  medicalRecordId String
+  allergen        String
+  reaction        String?
+  severity        SeverityLevel           @default(MODERATE)
+  isActive        Boolean                 @default(true)
+  notedAt         DateTime?
+  notes           String?
+  patient         PatientProfile          @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  medicalRecord   ElectronicMedicalRecord @relation(fields: [medicalRecordId], references: [id], onDelete: Cascade)
+  createdAt       DateTime                @default(now())
+  updatedAt       DateTime                @updatedAt
+
+  @@index([patientId, isActive])
 }
