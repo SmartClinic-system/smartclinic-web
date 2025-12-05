@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import {
   Box,
   Typography,
@@ -19,68 +19,100 @@ import {
   Sms,
   Cancel,
 } from "@mui/icons-material";
+import {
+  Calendar as BigCalendar,
+  dayjsLocalizer,
+  EventProps,
+  SlotInfo,
+  View,
+} from "react-big-calendar";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { DateCalendar } from "@mui/x-date-pickers/DateCalendar";
 import dayjs, { Dayjs } from "dayjs";
+import localizedFormat from "dayjs/plugin/localizedFormat";
+import localeData from "dayjs/plugin/localeData";
+import utc from "dayjs/plugin/utc";
+import weekday from "dayjs/plugin/weekday";
+import "react-big-calendar/lib/css/react-big-calendar.css";
+
+dayjs.extend(localizedFormat);
+dayjs.extend(localeData);
+dayjs.extend(utc);
+dayjs.extend(weekday);
 
 interface Appointment {
   id: number;
   patientName: string;
-  time: string;
   type: string;
-  date: number;
   color: "amber" | "green" | "gray";
+  start: string;
+  end: string;
 }
+
+type CalendarEvent = {
+  id: number;
+  title: string;
+  start: Date;
+  end: Date;
+  resource: Appointment;
+};
 
 const appointments: Appointment[] = [
   {
     id: 1,
     patientName: "Liam Gallagher",
-    time: "9:00 AM - Check-up",
     type: "Check-up",
-    date: 4,
     color: "amber",
+    start: "2024-10-04T09:00:00",
+    end: "2024-10-04T09:45:00",
   },
   {
     id: 2,
     patientName: "Olivia Chen",
-    time: "11:30 AM - Consultation",
     type: "Consultation",
-    date: 5,
     color: "green",
+    start: "2024-10-05T11:30:00",
+    end: "2024-10-05T12:15:00",
   },
   {
     id: 3,
     patientName: "Noah Patel",
-    time: "2:00 PM - Follow-up",
     type: "Follow-up",
-    date: 7,
     color: "green",
+    start: "2024-10-07T14:00:00",
+    end: "2024-10-07T15:00:00",
   },
   {
     id: 4,
     patientName: "Ava Rodriguez",
-    time: "10:00 AM - Annual Physical",
     type: "Annual Physical",
-    date: 9,
     color: "gray",
+    start: "2024-10-09T10:00:00",
+    end: "2024-10-09T11:00:00",
   },
 ];
 
+const localizer = dayjsLocalizer(dayjs);
+const MONTH_GRID_CELL_COUNT = 42;
+const initialCalendarDate = dayjs("2024-10-05");
+
 export default function AppointmentsPage() {
-  const [currentDate, setCurrentDate] = useState<Dayjs>(dayjs("2024-10-05"));
+  const [currentDate, setCurrentDate] =
+    useState<Dayjs>(initialCalendarDate);
   const [viewMode, setViewMode] = useState<"Daily" | "Weekly" | "Monthly">(
     "Weekly"
   );
   const [selectedAppointment, setSelectedAppointment] =
     useState<Appointment | null>(
-      appointments.find((apt) => apt.date === 5) || null
+      appointments.find((apt) =>
+        dayjs(apt.start).isSame(initialCalendarDate, "day")
+      ) || null
     );
 
-  const getColorStyles = (color: string) => {
+  const getColorStyles = (color: Appointment["color"]) => {
     const colors: Record<
-      string,
+      Appointment["color"],
       { bg: string; border: string; text: string; textSecondary: string }
     > = {
       amber: {
@@ -105,49 +137,138 @@ export default function AppointmentsPage() {
     return colors[color] || colors.gray;
   };
 
-  const getAppointmentsForDate = (date: number) => {
-    return appointments.filter((apt) => apt.date === date);
+  const formatAppointmentTimeRange = (appointment: Appointment) => {
+    const start = dayjs(appointment.start);
+    const end = dayjs(appointment.end);
+    return `${start.format("h:mm A")} - ${end.format("h:mm A")}`;
   };
 
-  const isToday = (date: number) => {
-    return date === 5; // Current date in the example
+  const formatAppointmentDateTime = (appointment: Appointment) => {
+    return dayjs(appointment.start).format("dddd, MMM D, YYYY [at] h:mm A");
+  };
+
+  const getReminderTimestamp = (appointment: Appointment) => {
+    return dayjs(appointment.start)
+      .subtract(1, "day")
+      .format("MMM D, h:mm A");
+  };
+
+  const updateSelectionForDate = (targetDate: Dayjs) => {
+    const match =
+      appointments.find((apt) =>
+        dayjs(apt.start).isSame(targetDate, "day")
+      ) || null;
+    setSelectedAppointment(match);
+  };
+
+  const getAppointmentsForDate = (date: Dayjs) => {
+    return appointments.filter((apt) =>
+      dayjs(apt.start).isSame(date, "day")
+    );
+  };
+
+  const isToday = (date: Dayjs) => {
+    return date.isSame(dayjs(), "day");
   };
 
   const handleDateChange = (newDate: Dayjs | null) => {
-    if (newDate) {
-      setCurrentDate(newDate);
-      const dateNum = newDate.date();
-      const apt = appointments.find((a) => a.date === dateNum);
-      setSelectedAppointment(apt || null);
-    }
+    if (!newDate) return;
+    setCurrentDate(newDate);
+    updateSelectionForDate(newDate);
   };
 
   const handleAppointmentClick = (appointment: Appointment) => {
+    setCurrentDate(dayjs(appointment.start));
     setSelectedAppointment(appointment);
   };
 
-  // Generate calendar days for October 2024
-  const startOfMonth = dayjs("2024-10-01").startOf("month");
-  const endOfMonth = dayjs("2024-10-01").endOf("month");
-  const startDate = startOfMonth.startOf("week");
-  const days: (number | null)[] = [];
+  const calendarEvents = useMemo<CalendarEvent[]>(() => {
+    return appointments.map((apt) => ({
+      id: apt.id,
+      title: apt.patientName,
+      start: dayjs(apt.start).toDate(),
+      end: dayjs(apt.end).toDate(),
+      resource: apt,
+    }));
+  }, []);
 
-  // Add days from previous month
-  for (let i = 0; i < startOfMonth.day(); i++) {
-    const prevMonthDate = startOfMonth.subtract(startOfMonth.day() - i, "day");
-    days.push(prevMonthDate.date());
-  }
+  const calendarDays = useMemo(() => {
+    const monthStart = currentDate.startOf("month");
+    const firstVisibleDay = monthStart.startOf("week");
+    return Array.from({ length: MONTH_GRID_CELL_COUNT }, (_, index) =>
+      firstVisibleDay.add(index, "day")
+    );
+  }, [currentDate]);
 
-  // Add days from current month
-  for (let i = 1; i <= endOfMonth.date(); i++) {
-    days.push(i);
-  }
+  const handleCalendarNavigate = (date: Date) => {
+    const nextDate = dayjs(date);
+    setCurrentDate(nextDate);
+    updateSelectionForDate(nextDate);
+  };
 
-  // Fill remaining days to complete the grid
-  const remainingDays = 42 - days.length;
-  for (let i = 1; i <= remainingDays; i++) {
-    days.push(i);
-  }
+  const handleCalendarViewChange = (nextView: View) => {
+    if (nextView === "day") {
+      setViewMode("Daily");
+    } else if (nextView === "week") {
+      setViewMode("Weekly");
+    } else {
+      setViewMode("Monthly");
+    }
+  };
+
+  const handleSlotSelect = (slotInfo: SlotInfo) => {
+    const nextDate = dayjs(slotInfo.start);
+    setCurrentDate(nextDate);
+    updateSelectionForDate(nextDate);
+  };
+
+  const navigateByView = (direction: "prev" | "next") => {
+    const unit =
+      viewMode === "Daily"
+        ? "day"
+        : viewMode === "Weekly"
+        ? "week"
+        : "month";
+    const delta = direction === "prev" ? -1 : 1;
+    const nextDate = currentDate.add(delta, unit);
+    setCurrentDate(nextDate);
+    updateSelectionForDate(nextDate);
+  };
+
+  const renderEvent = ({ event }: EventProps<CalendarEvent>) => {
+    const appointment = event.resource;
+    return (
+      <Box sx={{ display: "flex", flexDirection: "column" }}>
+        <Typography sx={{ fontSize: "0.75rem", fontWeight: 600 }}>
+          {appointment.patientName}
+        </Typography>
+        <Typography
+          sx={{ fontSize: "0.6875rem", color: "text.secondary" }}
+        >
+          {appointment.type}
+        </Typography>
+      </Box>
+    );
+  };
+
+  const eventPropGetter = (event: CalendarEvent) => {
+    const colors = getColorStyles(event.resource.color);
+    return {
+      style: {
+        backgroundColor: colors.bg,
+        borderLeft: `3px solid ${colors.border}`,
+        color: colors.text,
+        borderRadius: 8,
+        padding: "2px 6px",
+      },
+    };
+  };
+
+  const handleGoToToday = () => {
+    const today = dayjs();
+    setCurrentDate(today);
+    updateSelectionForDate(today);
+  };
 
   return (
     <Box sx={{ maxWidth: "1280px", mx: "auto" }}>
@@ -217,10 +338,7 @@ export default function AppointmentsPage() {
             }}
           >
             <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-              <IconButton
-                size="small"
-                onClick={() => setCurrentDate(currentDate.subtract(1, "month"))}
-              >
+              <IconButton size="small" onClick={() => navigateByView("prev")}>
                 <ChevronLeft />
               </IconButton>
               <Typography
@@ -233,10 +351,7 @@ export default function AppointmentsPage() {
               >
                 {currentDate.format("MMMM YYYY")}
               </Typography>
-              <IconButton
-                size="small"
-                onClick={() => setCurrentDate(currentDate.add(1, "month"))}
-              >
+              <IconButton size="small" onClick={() => navigateByView("next")}>
                 <ChevronRight />
               </IconButton>
               <Button
@@ -250,7 +365,7 @@ export default function AppointmentsPage() {
                   whiteSpace: "nowrap",
                   textTransform: "none",
                 }}
-                onClick={() => setCurrentDate(dayjs())}
+                onClick={handleGoToToday}
               >
                 Today
               </Button>
@@ -284,90 +399,93 @@ export default function AppointmentsPage() {
             </ToggleButtonGroup>
           </Box>
 
-          {/* Calendar Grid */}
+          {/* Calendar Grid / Scheduler */}
           <Box sx={{ flex: 1, mt: 2 }}>
-            {/* Day Headers */}
-            <Box
-              sx={{
-                display: "grid",
-                gridTemplateColumns: "repeat(7, 1fr)",
-              }}
-            >
-              {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day) => (
-                <Typography
-                  key={day}
+            {viewMode === "Monthly" ? (
+              <>
+                {/* Day Headers */}
+                <Box
                   sx={{
-                    textAlign: "center",
-                    fontSize: "0.75rem",
-                    fontWeight: 700,
-                    textTransform: "uppercase",
-                    py: 1,
-                    borderBottom: "1px solid",
-                    borderColor: "divider",
-                    color: "text.secondary",
+                    display: "grid",
+                    gridTemplateColumns: "repeat(7, 1fr)",
                   }}
                 >
-                  {day}
-                </Typography>
-              ))}
-            </Box>
+                  {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map(
+                    (day) => (
+                      <Typography
+                        key={day}
+                        sx={{
+                          textAlign: "center",
+                          fontSize: "0.75rem",
+                          fontWeight: 700,
+                          textTransform: "uppercase",
+                          py: 1,
+                          borderBottom: "1px solid",
+                          borderColor: "divider",
+                          color: "text.secondary",
+                        }}
+                      >
+                        {day}
+                      </Typography>
+                    )
+                  )}
+                </Box>
 
-            {/* Calendar Days */}
-            <Box
-              sx={{
-                display: "grid",
-                gridTemplateColumns: "repeat(7, 1fr)",
-              }}
-            >
-              {days.map((day, index) => {
-                const isCurrentMonth =
-                  index >= startOfMonth.day() &&
-                  day !== null &&
-                  day <= endOfMonth.date();
-                const dayAppointments = day ? getAppointmentsForDate(day) : [];
-                const isCurrentDay = day ? isToday(day) : false;
+                {/* Calendar Days */}
+                <Box
+                  sx={{
+                    display: "grid",
+                    gridTemplateColumns: "repeat(7, 1fr)",
+                  }}
+                >
+                  {calendarDays.map((day, index) => {
+                    const isCurrentMonth = day.isSame(currentDate, "month");
+                    const dayAppointments = getAppointmentsForDate(day);
+                    const isCurrentDay = isToday(day);
 
-                return (
-                  <Box
-                    key={index}
-                    sx={{
-                      borderRight: index % 7 !== 6 ? "1px solid" : "none",
-                      borderBottom: "1px solid",
-                      borderColor: "divider",
-                      p: 0.5,
-                      minHeight: 128,
-                      textAlign: "right",
-                      backgroundColor: isCurrentDay
-                        ? "rgba(59, 130, 246, 0.05)"
-                        : "transparent",
-                      color: isCurrentMonth ? "text.primary" : "text.secondary",
-                    }}
-                  >
-                    {day && (
-                      <>
-                        {isCurrentDay ? (
-                          <Box
-                            sx={{
-                              display: "inline-flex",
-                              alignItems: "center",
-                              justifyContent: "center",
-                              width: 24,
-                              height: 24,
-                              borderRadius: "50%",
-                              backgroundColor: "primary.main",
-                              color: "white",
-                              fontWeight: 700,
-                              fontSize: "0.875rem",
-                              mb: 0.5,
-                            }}
-                          >
-                            {day}
-                          </Box>
-                        ) : (
-                          <Typography sx={{ fontSize: "0.875rem", mb: 0.5 }}>
-                            {day}
-                          </Typography>
-                        )}
+                    return (
+                      <Box
+                        key={day.format("YYYY-MM-DD")}
+                        sx={{
+                          borderRight: index % 7 !== 6 ? "1px solid" : "none",
+                          borderBottom: "1px solid",
+                          borderColor: "divider",
+                          p: 0.5,
+                          minHeight: 128,
+                          textAlign: "right",
+                          backgroundColor: isCurrentDay
+                            ? "rgba(59, 130, 246, 0.05)"
+                            : "transparent",
+                          color: isCurrentMonth
+                            ? "text.primary"
+                            : "text.secondary",
+                        }}
+                      >
+                        <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
+                          {isCurrentDay ? (
+                            <Box
+                              sx={{
+                                display: "inline-flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                width: 24,
+                                height: 24,
+                                borderRadius: "50%",
+                                backgroundColor: "primary.main",
+                                color: "white",
+                                fontWeight: 700,
+                                fontSize: "0.875rem",
+                                mb: 0.5,
+                              }}
+                            >
+                              {day.date()}
+                            </Box>
+                          ) : (
+                            <Typography sx={{ fontSize: "0.875rem", mb: 0.5 }}>
+                              {day.date()}
+                            </Typography>
+                          )}
+                        </Box>
                         {dayAppointments.map((apt) => {
                           const colors = getColorStyles(apt.color);
                           return (
@@ -383,7 +501,7 @@ export default function AppointmentsPage() {
                                 mt: 0.5,
                                 cursor: "pointer",
                                 "&:hover": {
-                                  opacity: 0.8,
+                                  opacity: 0.85,
                                 },
                               }}
                             >
@@ -405,17 +523,58 @@ export default function AppointmentsPage() {
                                   color: colors.textSecondary,
                                 }}
                               >
-                                {apt.time}
+                                {formatAppointmentTimeRange(apt)}
                               </Typography>
                             </Box>
                           );
                         })}
-                      </>
-                    )}
-                  </Box>
-                );
-              })}
-            </Box>
+                      </Box>
+                    );
+                  })}
+                </Box>
+              </>
+            ) : (
+              <Box
+                sx={{
+                  border: "1px solid",
+                  borderColor: "divider",
+                  borderRadius: 2,
+                  p: { xs: 1, sm: 2 },
+                  "& .rbc-time-header": {
+                    borderColor: "divider",
+                  },
+                  "& .rbc-time-content": {
+                    borderColor: "divider",
+                  },
+                  "& .rbc-time-view": {
+                    border: "none",
+                  },
+                }}
+              >
+                <BigCalendar
+                  localizer={localizer}
+                  events={calendarEvents}
+                  date={currentDate.toDate()}
+                  view={viewMode === "Daily" ? "day" : "week"}
+                  views={["day", "week"]}
+                  onView={handleCalendarViewChange}
+                  onNavigate={handleCalendarNavigate}
+                  selectable
+                  onSelectEvent={(event) =>
+                    handleAppointmentClick(event.resource)
+                  }
+                  onSelectSlot={handleSlotSelect}
+                  toolbar={false}
+                  step={30}
+                  timeslots={2}
+                  components={{ event: renderEvent }}
+                  eventPropGetter={eventPropGetter}
+                  min={currentDate.hour(7).minute(0).second(0).toDate()}
+                  max={currentDate.hour(19).minute(0).second(0).toDate()}
+                  style={{ height: 640 }}
+                />
+              </Box>
+            )}
           </Box>
         </Box>
 
@@ -498,7 +657,7 @@ export default function AppointmentsPage() {
                     Date & Time
                   </Typography>
                   <Typography sx={{ fontWeight: 500 }}>
-                    Saturday, Oct 5, 2024 at 11:30 AM
+                    {formatAppointmentDateTime(selectedAppointment)}
                   </Typography>
                 </Box>
                 <Box>
@@ -528,7 +687,7 @@ export default function AppointmentsPage() {
                     Reason for Visit
                   </Typography>
                   <Typography sx={{ fontWeight: 500 }}>
-                    Routine Consultation
+                    {selectedAppointment.type}
                   </Typography>
                 </Box>
                 <Box>
@@ -539,7 +698,7 @@ export default function AppointmentsPage() {
                     SMS Reminder
                   </Typography>
                   <Typography sx={{ fontWeight: 500 }}>
-                    Reminder Sent (Oct 4, 10:00 AM)
+                    Reminder Scheduled ({getReminderTimestamp(selectedAppointment)})
                   </Typography>
                 </Box>
                 <Divider sx={{ my: 1 }} />
