@@ -1,12 +1,11 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
 import prisma from "@/lib/prisma";
 
 export const runtime = "nodejs";
 
-type RouteParams =
-  | { params: { patientId?: string } }
-  | { params: Promise<{ patientId?: string }> };
+type Params = { patientId: string };
+type RouteParams = { params: Params } | { params: Promise<Params> };
 
 const parseDate = (value?: string | null) => {
   if (!value) return null;
@@ -53,15 +52,18 @@ const validatePayload = (body: any) => {
   };
 };
 
-export async function PUT(request: Request, { params }: RouteParams) {
+const resolveParams = async (params: RouteParams["params"]) => {
+  if (params && typeof (params as Promise<any>).then === "function") {
+    return (await (params as Promise<Params>)) ?? {};
+  }
+  return (params as Params) ?? {};
+};
+
+export async function PUT(request: NextRequest, { params }: RouteParams) {
   try {
     const body = await request.json();
-    const resolvedParams =
-      params && typeof (params as Promise<any>).then === "function"
-        ? await (params as Promise<{ patientId?: string }>)
-        : (params as { patientId?: string });
-
-    const patientId = resolvedParams?.patientId ?? body?.patientId ?? body?.id;
+    const resolvedParams = await resolveParams(params);
+    const patientId = resolvedParams.patientId ?? body?.patientId ?? body?.id;
 
     if (!patientId || typeof patientId !== "string" || !patientId.trim()) {
       return NextResponse.json(

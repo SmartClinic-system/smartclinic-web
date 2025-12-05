@@ -1,12 +1,11 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
 import prisma from "@/lib/prisma";
 
 export const runtime = "nodejs";
 
-type RouteParams =
-  | { params: { patientId?: string } }
-  | { params: Promise<{ patientId?: string }> };
+type Params = { patientId: string };
+type RouteParams = { params: Params } | { params: Promise<Params> };
 
 const parseDate = (value?: string | null) => {
   if (!value) return null;
@@ -16,12 +15,12 @@ const parseDate = (value?: string | null) => {
 
 const resolveParams = async (params: RouteParams["params"]) => {
   if (params && typeof (params as Promise<any>).then === "function") {
-    return (await (params as Promise<{ patientId?: string }>)) ?? {};
+    return (await (params as Promise<Params>)) ?? {};
   }
-  return (params as { patientId?: string }) ?? {};
+  return (params as Params) ?? {};
 };
 
-export async function POST(request: Request, { params }: RouteParams) {
+export async function POST(request: NextRequest, { params }: RouteParams) {
   try {
     const body = await request.json();
     const resolvedParams = await resolveParams(params);
@@ -96,7 +95,7 @@ export async function POST(request: Request, { params }: RouteParams) {
   }
 }
 
-export async function PUT(request: Request, { params }: RouteParams) {
+export async function PUT(request: NextRequest, { params }: RouteParams) {
   try {
     const body = await request.json();
     const resolvedParams = await resolveParams(params);
