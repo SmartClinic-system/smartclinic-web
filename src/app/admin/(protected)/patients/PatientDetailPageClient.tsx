@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, type ReactElement } from "react";
 import {
   Alert,
   Avatar,
@@ -29,6 +29,16 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
+import {
+  Document,
+  Page,
+  PDFDownloadLink,
+  PDFViewer,
+  StyleSheet,
+  Text,
+  View,
+  type DocumentProps,
+} from "@react-pdf/renderer";
 import {
   ContactPhone,
   Email,
@@ -384,7 +394,10 @@ export default function PatientDetailPageClient({
     data.labResults
   );
   const [allergies, setAllergies] = useState<AllergyData[]>(data.allergies);
-  const profileForView = { ...profile, medicalRecord: medicalRecord ?? null };
+  const profileForView = useMemo(
+    () => ({ ...profile, medicalRecord: medicalRecord ?? null }),
+    [profile, medicalRecord]
+  );
   const [editOpen, setEditOpen] = useState(false);
   const [patientForm, setPatientForm] = useState<PatientFormState>(() =>
     toPatientForm(profileForView)
@@ -416,6 +429,7 @@ export default function PatientDetailPageClient({
     newAllergyForm()
   );
   const [savingRecord, setSavingRecord] = useState<EditTabValue | null>(null);
+  const [printOpen, setPrintOpen] = useState(false);
 
   const searchQuery = searchValue.trim().toLowerCase();
   const applySearch = <T,>(
@@ -437,6 +451,43 @@ export default function PatientDetailPageClient({
 
   const overviewPinnedNotes =
     profileForView.medicalRecord?.summary?.trim() || "No notes available yet.";
+
+  const pdfDocument = useMemo<ReactElement<DocumentProps>>(
+    () => (
+      <PatientRecordPdf
+        profile={profileForView}
+        allergies={allergies}
+        encounters={encounters}
+        diagnoses={diagnoses}
+        treatmentPlans={treatmentPlans}
+        medications={medications}
+        vitals={vitals}
+        labResults={labResults}
+        recentActivity={data.recentActivity}
+      />
+    ),
+    [
+      profileForView,
+      allergies,
+      encounters,
+      diagnoses,
+      treatmentPlans,
+      medications,
+      vitals,
+      labResults,
+      data.recentActivity,
+    ]
+  );
+
+  const pdfFileName = useMemo(
+    () =>
+      `${profileForView.fullName || "patient"}-record${
+        profileForView.patientNumber ? `-${profileForView.patientNumber}` : ""
+      }.pdf`
+        .replace(/\s+/g, "-")
+        .toLowerCase(),
+    [profileForView.fullName, profileForView.patientNumber]
+  );
 
   const handleOpenEdit = () => {
     setPatientForm(toPatientForm(profileForView));
@@ -1179,6 +1230,7 @@ export default function PatientDetailPageClient({
         allergies={allergyBadges}
         onEdit={handleOpenEdit}
         onManageRecords={() => handleOpenRecords()}
+        onPrintRecord={() => setPrintOpen(true)}
       />
 
       <Card
@@ -1212,6 +1264,13 @@ export default function PatientDetailPageClient({
 
         <Box sx={{ p: { xs: 2, md: 3 } }}>{renderTabContent()}</Box>
       </Card>
+
+      <PrintRecordDialog
+        open={printOpen}
+        onClose={() => setPrintOpen(false)}
+        pdfDocument={pdfDocument}
+        fileName={pdfFileName}
+      />
 
       <EditInfoDialog
         open={editOpen}
@@ -1298,11 +1357,13 @@ function HeaderCard({
   allergies,
   onEdit,
   onManageRecords,
+  onPrintRecord,
 }: {
   profile: ProfileData;
   allergies: AllergyData[];
   onEdit: () => void;
   onManageRecords: () => void;
+  onPrintRecord: () => void;
 }) {
   const allergyLabel =
     allergies.length === 0
@@ -1375,9 +1436,85 @@ function HeaderCard({
         <Button variant="outlined" onClick={onManageRecords}>
           Manage Records
         </Button>
-        <Button variant="contained">Book Appointment</Button>
+        <Button variant="contained" onClick={onPrintRecord}>
+          Print Record
+        </Button>
       </Stack>
     </Card>
+  );
+}
+
+function PrintRecordDialog({
+  open,
+  onClose,
+  pdfDocument,
+  fileName,
+}: {
+  open: boolean;
+  onClose: () => void;
+  pdfDocument: ReactElement<DocumentProps>;
+  fileName: string;
+}) {
+  return (
+    <Dialog open={open} onClose={onClose} fullWidth maxWidth="lg">
+      <DialogTitle
+        sx={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          gap: 2,
+        }}
+      >
+        <Box>
+          <Typography variant="h6" fontWeight={700}>
+            Print Patient Record
+          </Typography>
+          <Typography variant="body2" color="text.secondary">
+            {fileName}
+          </Typography>
+        </Box>
+        <PDFDownloadLink document={pdfDocument} fileName={fileName}>
+          {({ loading }) => (
+            <Button
+              variant="contained"
+              size="small"
+              disabled={loading}
+              component="span"
+            >
+              {loading ? "Preparing PDF..." : "Download PDF"}
+            </Button>
+          )}
+        </PDFDownloadLink>
+      </DialogTitle>
+
+      <DialogContent
+        dividers
+        sx={{
+          bgcolor: "grey.50",
+        }}
+      >
+        <Box
+          sx={{
+            height: 640,
+            border: "1px solid",
+            borderColor: "divider",
+            bgcolor: "white",
+          }}
+        >
+          {open ? (
+            <PDFViewer width="100%" height="100%" showToolbar>
+              {pdfDocument}
+            </PDFViewer>
+          ) : null}
+        </Box>
+      </DialogContent>
+
+      <DialogActions sx={{ justifyContent: "flex-end" }}>
+        <Button onClick={onClose} variant="outlined">
+          Close
+        </Button>
+      </DialogActions>
+    </Dialog>
   );
 }
 
@@ -2983,3 +3120,360 @@ const formatDateTimeRange = (start?: string | null, end?: string | null) => {
 
   return `${startFormatted} – ${endFormatted}`;
 };
+
+function PatientRecordPdf({
+  profile,
+  allergies,
+  encounters,
+  diagnoses,
+  treatmentPlans,
+  medications,
+  vitals,
+  labResults,
+  recentActivity,
+}: {
+  profile: ProfileData;
+  allergies: AllergyData[];
+  encounters: EncounterData[];
+  diagnoses: DiagnosisData[];
+  treatmentPlans: TreatmentPlanData[];
+  medications: MedicationData[];
+  vitals: VitalData[];
+  labResults: LabResultData[];
+  recentActivity: ActivityItem[];
+}) {
+  const textOrDash = (value?: string | null) =>
+    value && String(value).trim().length ? String(value).trim() : "—";
+
+  return (
+    <Document>
+      <Page size="A4" style={pdfStyles.page} wrap>
+        <View style={pdfStyles.header}>
+          <Text style={pdfStyles.title}>Patient Record</Text>
+          <Text style={pdfStyles.subtitle}>{profile.fullName}</Text>
+          <Text style={pdfStyles.meta}>
+            ID: {profile.patientNumber} • DOB: {formatDate(profile.dateOfBirth)}{" "}
+            • Age: {profile.age} • Gender: {profile.gender}
+          </Text>
+          <Text style={pdfStyles.meta}>
+            Created: {formatDate(profile.createdAt)} • Printed:{" "}
+            {formatDateTime(new Date().toISOString())}
+          </Text>
+        </View>
+
+        <View style={pdfStyles.section}>
+          <Text style={pdfStyles.sectionTitle}>Contact & Demographics</Text>
+          <View style={pdfStyles.row}>
+            <Text style={pdfStyles.label}>Phone</Text>
+            <Text style={pdfStyles.value}>
+              {textOrDash(profile.phoneNumber)}
+            </Text>
+          </View>
+          <View style={pdfStyles.row}>
+            <Text style={pdfStyles.label}>Email</Text>
+            <Text style={pdfStyles.value}>{textOrDash(profile.email)}</Text>
+          </View>
+          <View style={pdfStyles.row}>
+            <Text style={pdfStyles.label}>Preferred Pharmacy</Text>
+            <Text style={pdfStyles.value}>
+              {textOrDash(profile.medicalRecord?.preferredPharmacy ?? "")}
+            </Text>
+          </View>
+          <View style={pdfStyles.row}>
+            <Text style={pdfStyles.label}>Primary Provider</Text>
+            <Text style={pdfStyles.value}>
+              {textOrDash(profile.medicalRecord?.primaryProvider ?? "")}
+            </Text>
+          </View>
+          <View style={pdfStyles.row}>
+            <Text style={pdfStyles.label}>Last Review</Text>
+            <Text style={pdfStyles.value}>
+              {formatDate(profile.medicalRecord?.lastReview)}
+            </Text>
+          </View>
+          <View style={pdfStyles.row}>
+            <Text style={pdfStyles.label}>Record Created</Text>
+            <Text style={pdfStyles.value}>{formatDate(profile.createdAt)}</Text>
+          </View>
+          <View style={pdfStyles.row}>
+            <Text style={pdfStyles.label}>Summary</Text>
+            <Text style={pdfStyles.value}>
+              {textOrDash(profile.medicalRecord?.summary ?? "")}
+            </Text>
+          </View>
+        </View>
+
+        <View style={pdfStyles.section}>
+          <Text style={pdfStyles.sectionTitle}>Allergies</Text>
+          {allergies.length ? (
+            allergies.map((allergy) => (
+              <View key={allergy.id} style={pdfStyles.listItem}>
+                <Text style={pdfStyles.itemTitle}>
+                  {allergy.allergen} · {formatLabel(allergy.severity)}
+                </Text>
+                <Text style={pdfStyles.muted}>
+                  Reaction: {textOrDash(allergy.reaction)} · Status:{" "}
+                  {allergy.isActive ? "Active" : "Inactive"} · Noted:{" "}
+                  {formatDate(allergy.notedAt)}
+                </Text>
+                {allergy.notes ? (
+                  <Text style={pdfStyles.value}>{allergy.notes}</Text>
+                ) : null}
+              </View>
+            ))
+          ) : (
+            <Text style={pdfStyles.muted}>No allergies recorded.</Text>
+          )}
+        </View>
+
+        <View style={pdfStyles.section}>
+          <Text style={pdfStyles.sectionTitle}>Encounters</Text>
+          {encounters.length ? (
+            encounters.map((encounter) => (
+              <View key={encounter.id} style={pdfStyles.listItem}>
+                <Text style={pdfStyles.itemTitle}>
+                  {formatLabel(encounter.type)} ·{" "}
+                  {formatLabel(encounter.status || "")}
+                </Text>
+                <Text style={pdfStyles.muted}>
+                  {formatDateTimeRange(encounter.startTime, encounter.endTime)}{" "}
+                  · {textOrDash(encounter.location || "In Clinic")}
+                </Text>
+                <Text style={pdfStyles.value}>
+                  Reason: {textOrDash(encounter.reason)}
+                </Text>
+                {encounter.notes ? (
+                  <Text style={pdfStyles.value}>Notes: {encounter.notes}</Text>
+                ) : null}
+              </View>
+            ))
+          ) : (
+            <Text style={pdfStyles.muted}>No encounters recorded.</Text>
+          )}
+        </View>
+
+        <View style={pdfStyles.section}>
+          <Text style={pdfStyles.sectionTitle}>Diagnoses</Text>
+          {diagnoses.length ? (
+            diagnoses.map((dx) => (
+              <View key={dx.id} style={pdfStyles.listItem}>
+                <Text style={pdfStyles.itemTitle}>
+                  {dx.code} · {formatLabel(dx.status)}
+                </Text>
+                <Text style={pdfStyles.value}>
+                  {textOrDash(dx.description)} · Onset:{" "}
+                  {formatDate(dx.onsetDate)} · Resolved:{" "}
+                  {formatDate(dx.resolvedDate)}
+                </Text>
+                <Text style={pdfStyles.muted}>
+                  Added: {formatDate(dx.createdAt)}
+                </Text>
+              </View>
+            ))
+          ) : (
+            <Text style={pdfStyles.muted}>No diagnoses recorded.</Text>
+          )}
+        </View>
+
+        <View style={pdfStyles.section}>
+          <Text style={pdfStyles.sectionTitle}>Treatment Plans</Text>
+          {treatmentPlans.length ? (
+            treatmentPlans.map((plan) => (
+              <View key={plan.id} style={pdfStyles.listItem}>
+                <Text style={pdfStyles.itemTitle}>
+                  {formatLabel(plan.status)} · Goal: {textOrDash(plan.goal)}
+                </Text>
+                <Text style={pdfStyles.value}>
+                  Start: {formatDate(plan.startDate)} · End:{" "}
+                  {formatDate(plan.endDate)}
+                </Text>
+                {plan.notes ? (
+                  <Text style={pdfStyles.value}>Notes: {plan.notes}</Text>
+                ) : null}
+                {plan.medications.length ? (
+                  <View style={pdfStyles.subList}>
+                    <Text style={pdfStyles.subListTitle}>Medications</Text>
+                    {plan.medications.map((med) => (
+                      <Text key={med.id} style={pdfStyles.subListItem}>
+                        {med.medicationName} ({med.dosage || "—"}) ·{" "}
+                        {textOrDash(med.frequency)} ·{" "}
+                        {formatDate(med.startDate)} - {formatDate(med.endDate)}
+                      </Text>
+                    ))}
+                  </View>
+                ) : null}
+              </View>
+            ))
+          ) : (
+            <Text style={pdfStyles.muted}>No treatment plans recorded.</Text>
+          )}
+        </View>
+
+        <View style={pdfStyles.section}>
+          <Text style={pdfStyles.sectionTitle}>Medications</Text>
+          {medications.length ? (
+            medications.map((med) => (
+              <View key={med.id} style={pdfStyles.listItem}>
+                <Text style={pdfStyles.itemTitle}>
+                  {med.medicationName} · {textOrDash(med.dosage)}
+                </Text>
+                <Text style={pdfStyles.value}>
+                  Route: {formatLabel(med.route)} · Frequency:{" "}
+                  {textOrDash(med.frequency)}
+                </Text>
+                <Text style={pdfStyles.muted}>
+                  Start: {formatDate(med.startDate)} · End:{" "}
+                  {formatDate(med.endDate)} · Status: {med.status}
+                </Text>
+                {med.instructions ? (
+                  <Text style={pdfStyles.value}>
+                    Instructions: {med.instructions}
+                  </Text>
+                ) : null}
+              </View>
+            ))
+          ) : (
+            <Text style={pdfStyles.muted}>No medications recorded.</Text>
+          )}
+        </View>
+
+        <View style={pdfStyles.section}>
+          <Text style={pdfStyles.sectionTitle}>Vitals</Text>
+          {vitals.length ? (
+            vitals.map((vital) => (
+              <View key={vital.id} style={pdfStyles.listItem}>
+                <Text style={pdfStyles.itemTitle}>
+                  {formatLabel(vital.type)}: {vital.value} {vital.unit}
+                </Text>
+                <Text style={pdfStyles.muted}>
+                  Recorded: {formatDateTime(vital.recordedAt)} · By:{" "}
+                  {textOrDash(vital.recordedBy)}
+                </Text>
+              </View>
+            ))
+          ) : (
+            <Text style={pdfStyles.muted}>No vitals recorded.</Text>
+          )}
+        </View>
+
+        <View style={pdfStyles.section}>
+          <Text style={pdfStyles.sectionTitle}>Lab Results</Text>
+          {labResults.length ? (
+            labResults.map((lab) => (
+              <View key={lab.id} style={pdfStyles.listItem}>
+                <Text style={pdfStyles.itemTitle}>
+                  {lab.testName} · {formatLabel(lab.status)}
+                </Text>
+                <Text style={pdfStyles.value}>
+                  Result: {textOrDash(lab.resultValue)} {lab.units || ""} ·
+                  Range: {textOrDash(lab.referenceRange)}
+                </Text>
+                <Text style={pdfStyles.muted}>
+                  Collected: {formatDate(lab.collectedAt)} · Resulted:{" "}
+                  {formatDate(lab.resultedAt)} · Provider:{" "}
+                  {textOrDash(lab.orderingProvider)}
+                </Text>
+                {lab.notes ? (
+                  <Text style={pdfStyles.value}>Notes: {lab.notes}</Text>
+                ) : null}
+              </View>
+            ))
+          ) : (
+            <Text style={pdfStyles.muted}>No lab results recorded.</Text>
+          )}
+        </View>
+
+        <View style={pdfStyles.section}>
+          <Text style={pdfStyles.sectionTitle}>Recent Activity</Text>
+          {recentActivity.length ? (
+            recentActivity.map((activity) => (
+              <View key={activity.id} style={pdfStyles.listItem}>
+                <Text style={pdfStyles.itemTitle}>
+                  {formatLabel(activity.type)} · {activity.title}
+                </Text>
+                <Text style={pdfStyles.value}>{activity.description}</Text>
+                <Text style={pdfStyles.muted}>
+                  {formatDateTime(activity.date)}
+                </Text>
+              </View>
+            ))
+          ) : (
+            <Text style={pdfStyles.muted}>No recent activity recorded.</Text>
+          )}
+        </View>
+      </Page>
+    </Document>
+  );
+}
+
+const pdfStyles = StyleSheet.create({
+  page: {
+    padding: 24,
+    fontSize: 11,
+    color: "#111",
+    fontFamily: "Helvetica",
+  },
+  header: {
+    marginBottom: 12,
+  },
+  title: {
+    fontSize: 18,
+    fontWeight: "bold",
+  },
+  subtitle: {
+    fontSize: 14,
+    fontWeight: "bold",
+    marginTop: 4,
+    marginBottom: 4,
+  },
+  meta: {
+    fontSize: 10,
+    color: "#555",
+  },
+  section: {
+    marginBottom: 12,
+    paddingBottom: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: "#e0e0e0",
+  },
+  sectionTitle: {
+    fontSize: 12,
+    fontWeight: "bold",
+    marginBottom: 6,
+  },
+  row: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: 4,
+  },
+  label: {
+    width: "45%",
+    fontWeight: "bold",
+  },
+  value: {
+    width: "55%",
+  },
+  listItem: {
+    marginBottom: 6,
+  },
+  itemTitle: {
+    fontSize: 11,
+    fontWeight: "bold",
+  },
+  muted: {
+    color: "#666",
+    fontSize: 10,
+  },
+  subList: {
+    marginTop: 4,
+  },
+  subListTitle: {
+    fontSize: 10,
+    fontWeight: "bold",
+    marginBottom: 2,
+  },
+  subListItem: {
+    fontSize: 10,
+    marginBottom: 2,
+  },
+});
