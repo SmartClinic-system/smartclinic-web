@@ -85,6 +85,9 @@ type PatientWithDetail = {
     frequency: string | null;
     startDate: Date | null;
     endDate: Date | null;
+    treatmentPlanId: string | null;
+    prescribingProvider: string | null;
+    instructions: string | null;
   }>;
   vitals: Array<{
     id: string;
@@ -103,10 +106,12 @@ type PatientWithDetail = {
     referenceRange: string | null;
     collectedAt: Date | null;
     resultedAt: Date | null;
+    orderingProvider: string | null;
     notes: string | null;
   }>;
   allergies: Array<{
     id: string;
+    medicalRecordId: string;
     allergen: string;
     reaction: string | null;
     severity: string;
@@ -228,12 +233,15 @@ function buildPatientDetailData(patient: PatientWithDetail): PatientDetailData {
 
   const medications = patient.medicationOrders.map((med) => ({
     id: med.id,
+    treatmentPlanId: med.treatmentPlanId,
     medicationName: med.medicationName,
     dosage: med.dosage ?? "",
     route: med.route,
     frequency: med.frequency ?? "",
     startDate: toISO(med.startDate),
     endDate: toISO(med.endDate),
+    prescribingProvider: med.prescribingProvider ?? "",
+    instructions: med.instructions ?? "",
     status: med.endDate && med.endDate < new Date() ? "Completed" : "Active",
   }));
 
@@ -255,11 +263,13 @@ function buildPatientDetailData(patient: PatientWithDetail): PatientDetailData {
     referenceRange: lab.referenceRange ?? "",
     collectedAt: toISO(lab.collectedAt),
     resultedAt: toISO(lab.resultedAt),
+    orderingProvider: lab.orderingProvider ?? "",
     notes: lab.notes ?? "",
   }));
 
   const allergies = patient.allergies.map((allergy) => ({
     id: allergy.id,
+    medicalRecordId: allergy.medicalRecordId,
     allergen: allergy.allergen,
     reaction: allergy.reaction ?? "",
     severity: allergy.severity,
