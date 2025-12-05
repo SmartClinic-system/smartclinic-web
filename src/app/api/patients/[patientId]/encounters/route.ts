@@ -116,9 +116,33 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
       );
     }
 
-    const startTime = body?.startTime ? parseDate(body.startTime) : undefined;
-    const endTime =
-      body?.endTime !== undefined ? parseDate(body.endTime) : undefined;
+    let startTime: Date | undefined;
+    if (body?.startTime !== undefined) {
+      const parsed = parseDate(body.startTime);
+      if (!parsed) {
+        return NextResponse.json(
+          { error: "startTime must be a valid date string when provided." },
+          { status: 400 }
+        );
+      }
+      startTime = parsed;
+    }
+
+    let endTime: Date | null | undefined;
+    if (body?.endTime !== undefined) {
+      if (body.endTime === null || body.endTime === "") {
+        endTime = null;
+      } else {
+        const parsed = parseDate(body.endTime);
+        if (!parsed) {
+          return NextResponse.json(
+            { error: "endTime must be a valid date string when provided." },
+            { status: 400 }
+          );
+        }
+        endTime = parsed;
+      }
+    }
 
     const encounter = await prisma.encounter.update({
       where: { id: encounterId, patientId },
