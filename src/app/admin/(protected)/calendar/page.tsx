@@ -98,8 +98,7 @@ const MONTH_GRID_CELL_COUNT = 42;
 const initialCalendarDate = dayjs("2024-10-05");
 
 export default function AppointmentsPage() {
-  const [currentDate, setCurrentDate] =
-    useState<Dayjs>(initialCalendarDate);
+  const [currentDate, setCurrentDate] = useState<Dayjs>(initialCalendarDate);
   const [viewMode, setViewMode] = useState<"Daily" | "Weekly" | "Monthly">(
     "Weekly"
   );
@@ -148,23 +147,18 @@ export default function AppointmentsPage() {
   };
 
   const getReminderTimestamp = (appointment: Appointment) => {
-    return dayjs(appointment.start)
-      .subtract(1, "day")
-      .format("MMM D, h:mm A");
+    return dayjs(appointment.start).subtract(1, "day").format("MMM D, h:mm A");
   };
 
   const updateSelectionForDate = (targetDate: Dayjs) => {
     const match =
-      appointments.find((apt) =>
-        dayjs(apt.start).isSame(targetDate, "day")
-      ) || null;
+      appointments.find((apt) => dayjs(apt.start).isSame(targetDate, "day")) ||
+      null;
     setSelectedAppointment(match);
   };
 
   const getAppointmentsForDate = (date: Dayjs) => {
-    return appointments.filter((apt) =>
-      dayjs(apt.start).isSame(date, "day")
-    );
+    return appointments.filter((apt) => dayjs(apt.start).isSame(date, "day"));
   };
 
   const isToday = (date: Dayjs) => {
@@ -224,27 +218,21 @@ export default function AppointmentsPage() {
 
   const navigateByView = (direction: "prev" | "next") => {
     const unit =
-      viewMode === "Daily"
-        ? "day"
-        : viewMode === "Weekly"
-        ? "week"
-        : "month";
+      viewMode === "Daily" ? "day" : viewMode === "Weekly" ? "week" : "month";
     const delta = direction === "prev" ? -1 : 1;
     const nextDate = currentDate.add(delta, unit);
     setCurrentDate(nextDate);
     updateSelectionForDate(nextDate);
   };
 
-  const renderEvent = ({ event }: EventProps<CalendarEvent>) => {
+  const renderEvent = ({ event }: { event: CalendarEvent }) => {
     const appointment = event.resource;
     return (
       <Box sx={{ display: "flex", flexDirection: "column" }}>
         <Typography sx={{ fontSize: "0.75rem", fontWeight: 600 }}>
           {appointment.patientName}
         </Typography>
-        <Typography
-          sx={{ fontSize: "0.6875rem", color: "text.secondary" }}
-        >
+        <Typography sx={{ fontSize: "0.6875rem", color: "text.secondary" }}>
           {appointment.type}
         </Typography>
       </Box>
@@ -461,7 +449,9 @@ export default function AppointmentsPage() {
                             : "text.secondary",
                         }}
                       >
-                        <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
+                        <Box
+                          sx={{ display: "flex", justifyContent: "flex-end" }}
+                        >
                           {isCurrentDay ? (
                             <Box
                               sx={{
@@ -560,7 +550,7 @@ export default function AppointmentsPage() {
                   onView={handleCalendarViewChange}
                   onNavigate={handleCalendarNavigate}
                   selectable
-                  onSelectEvent={(event) =>
+                  onSelectEvent={(event: { resource: Appointment }) =>
                     handleAppointmentClick(event.resource)
                   }
                   onSelectSlot={handleSlotSelect}
@@ -698,7 +688,8 @@ export default function AppointmentsPage() {
                     SMS Reminder
                   </Typography>
                   <Typography sx={{ fontWeight: 500 }}>
-                    Reminder Scheduled ({getReminderTimestamp(selectedAppointment)})
+                    Reminder Scheduled (
+                    {getReminderTimestamp(selectedAppointment)})
                   </Typography>
                 </Box>
                 <Divider sx={{ my: 1 }} />

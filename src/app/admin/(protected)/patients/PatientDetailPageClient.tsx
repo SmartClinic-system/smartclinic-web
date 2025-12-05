@@ -2,12 +2,20 @@
 
 import { useMemo, useState } from "react";
 import {
+  Alert,
   Avatar,
   Box,
   Button,
   Card,
   Chip,
+  CircularProgress,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
   InputAdornment,
+  MenuItem,
+  Snackbar,
   Stack,
   Tab,
   Tabs,
@@ -154,6 +162,24 @@ interface VitalData {
   recordedBy: string;
 }
 
+type PatientFormState = {
+  firstName: string;
+  lastName: string;
+  dateOfBirth: string;
+  gender: string;
+  phoneNumber: string;
+  email: string;
+};
+
+type EmrFormState = {
+  summary: string;
+  primaryProvider: string;
+  preferredPharmacy: string;
+  lastReview: string;
+};
+
+type FeedbackState = { type: "success" | "error"; message: string } | null;
+
 const tabs = [
   { label: "Overview", value: "overview" },
   { label: "Diagnoses", value: "diagnoses" },
@@ -174,6 +200,21 @@ export default function PatientDetailPageClient({
 }) {
   const [activeTab, setActiveTab] = useState<TabValue>("overview");
   const [searchValue, setSearchValue] = useState("");
+  const [profile, setProfile] = useState<ProfileData>(data.profile);
+  const [medicalRecord, setMedicalRecord] = useState<
+    ProfileData["medicalRecord"]
+  >(data.profile.medicalRecord);
+  const profileForView = { ...profile, medicalRecord: medicalRecord ?? null };
+  const [editOpen, setEditOpen] = useState(false);
+  const [patientForm, setPatientForm] = useState<PatientFormState>(() =>
+    toPatientForm(profileForView)
+  );
+  const [emrForm, setEmrForm] = useState<EmrFormState>(() =>
+    toEmrForm(profileForView.medicalRecord)
+  );
+  const [savingProfile, setSavingProfile] = useState(false);
+  const [savingEmr, setSavingEmr] = useState(false);
+  const [feedback, setFeedback] = useState<FeedbackState>(null);
 
   const searchQuery = searchValue.trim().toLowerCase();
   const applySearch = <T,>(
@@ -194,7 +235,106 @@ export default function PatientDetailPageClient({
   const allergyBadges = data.allergies.filter((allergy) => allergy.isActive);
 
   const overviewPinnedNotes =
-    data.profile.medicalRecord?.summary?.trim() || "No notes available yet.";
+    profileForView.medicalRecord?.summary?.trim() || "No notes available yet.";
+
+  const handleOpenEdit = () => {
+    setPatientForm(toPatientForm(profileForView));
+    setEmrForm(toEmrForm(profileForView.medicalRecord));
+    setEditOpen(true);
+  };
+
+  const handleCloseEdit = () => setEditOpen(false);
+
+  const handleProfileSave = async () => {
+    setSavingProfile(true);
+    setFeedback(null);
+    try {
+      const response = await fetch(
+        `/api/patients/${profileForView.id}/profile`,
+        {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            ...patientForm,
+            dateOfBirth: patientForm.dateOfBirth,
+          }),
+        }
+      );
+
+      const payload = await response.json();
+      if (!response.ok) {
+        throw new Error(payload?.error || "Unable to update patient info.");
+      }
+
+      const updated = payload.profile as ProfileData;
+      const nextProfile: ProfileData = {
+        ...profileForView,
+        ...updated,
+        age: getAgeFromIso(updated.dateOfBirth),
+        medicalRecord: updated.medicalRecord ?? profileForView.medicalRecord,
+      };
+
+      setProfile(nextProfile);
+      setMedicalRecord(nextProfile.medicalRecord);
+      setFeedback({ type: "success", message: "Patient info updated." });
+    } catch (error) {
+      setFeedback({
+        type: "error",
+        message:
+          error instanceof Error
+            ? error.message
+            : "Unable to update patient info.",
+      });
+    } finally {
+      setSavingProfile(false);
+    }
+  };
+
+  const handleEmrSave = async () => {
+    setSavingEmr(true);
+    setFeedback(null);
+    try {
+      const response = await fetch(
+        `/api/patients/${profileForView.id}/medical-record`,
+        {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            ...emrForm,
+            lastReview: emrForm.lastReview || null,
+          }),
+        }
+      );
+
+      const payload = await response.json();
+      if (!response.ok) {
+        throw new Error(payload?.error || "Unable to save medical record.");
+      }
+
+      const nextMedicalRecord = payload.medicalRecord as
+        | ProfileData["medicalRecord"]
+        | undefined;
+
+      setMedicalRecord(nextMedicalRecord ?? null);
+      setProfile((prev) => ({
+        ...prev,
+        medicalRecord: nextMedicalRecord ?? null,
+      }));
+      setFeedback({ type: "success", message: "EMR saved." });
+    } catch (error) {
+      setFeedback({
+        type: "error",
+        message:
+          error instanceof Error
+            ? error.message
+            : "Unable to save medical record.",
+      });
+    } finally {
+      setSavingEmr(false);
+    }
+  };
+
+  const closeFeedback = () => setFeedback(null);
 
   const renderTabContent = () => {
     switch (activeTab) {
@@ -204,7 +344,7 @@ export default function PatientDetailPageClient({
             recentActivity={data.recentActivity}
             activeMedications={activeMedications}
             allergies={allergyBadges}
-            profile={data.profile}
+            profile={profileForView}
             pinnedNotes={overviewPinnedNotes}
           />
         );
@@ -463,7 +603,11 @@ export default function PatientDetailPageClient({
 
   return (
     <Box sx={{ maxWidth: "1280px", mx: "auto", py: 4, px: { xs: 2, md: 0 } }}>
-      <HeaderCard profile={data.profile} allergies={allergyBadges} />
+      <HeaderCard
+        profile={profileForView}
+        allergies={allergyBadges}
+        onEdit={handleOpenEdit}
+      />
 
       <Card
         sx={{
@@ -494,35 +638,42 @@ export default function PatientDetailPageClient({
           ))}
         </Tabs>
 
-        <Box
-          sx={{
-            p: { xs: 2, md: 3 },
-            borderBottom: "1px solid",
-            borderColor: "divider",
-          }}
-        >
-          <TextField
-            fullWidth
-            placeholder="Search within patient record..."
-            value={searchValue}
-            onChange={(event) => setSearchValue(event.target.value)}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <Search sx={{ color: "text.secondary" }} />
-                </InputAdornment>
-              ),
-            }}
-            sx={{
-              "& .MuiOutlinedInput-root": {
-                backgroundColor: "background.paper",
-              },
-            }}
-          />
-        </Box>
-
         <Box sx={{ p: { xs: 2, md: 3 } }}>{renderTabContent()}</Box>
       </Card>
+
+      <EditInfoDialog
+        open={editOpen}
+        onClose={handleCloseEdit}
+        patientForm={patientForm}
+        emrForm={emrForm}
+        onPatientChange={(key, value) =>
+          setPatientForm((prev) => ({ ...prev, [key]: value }))
+        }
+        onEmrChange={(key, value) =>
+          setEmrForm((prev) => ({ ...prev, [key]: value }))
+        }
+        onSavePatient={handleProfileSave}
+        onSaveEmr={handleEmrSave}
+        savingProfile={savingProfile}
+        savingEmr={savingEmr}
+      />
+
+      {feedback && (
+        <Snackbar
+          open
+          autoHideDuration={4000}
+          onClose={closeFeedback}
+          anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+        >
+          <Alert
+            onClose={closeFeedback}
+            severity={feedback.type}
+            sx={{ width: "100%" }}
+          >
+            {feedback.message}
+          </Alert>
+        </Snackbar>
+      )}
     </Box>
   );
 }
@@ -530,9 +681,11 @@ export default function PatientDetailPageClient({
 function HeaderCard({
   profile,
   allergies,
+  onEdit,
 }: {
   profile: ProfileData;
   allergies: AllergyData[];
+  onEdit: () => void;
 }) {
   const allergyLabel =
     allergies.length === 0
@@ -599,7 +752,9 @@ function HeaderCard({
       </Stack>
 
       <Stack direction={{ xs: "column", sm: "row" }} spacing={1.5}>
-        <Button variant="outlined">Edit Info</Button>
+        <Button variant="outlined" onClick={onEdit}>
+          Edit Info
+        </Button>
         <Button variant="contained">Book Appointment</Button>
       </Stack>
     </Card>
@@ -874,6 +1029,205 @@ function EmptyState({ message }: { message: string }) {
   );
 }
 
+function EditInfoDialog({
+  open,
+  onClose,
+  patientForm,
+  emrForm,
+  onPatientChange,
+  onEmrChange,
+  onSavePatient,
+  onSaveEmr,
+  savingProfile,
+  savingEmr,
+}: {
+  open: boolean;
+  onClose: () => void;
+  patientForm: PatientFormState;
+  emrForm: EmrFormState;
+  onPatientChange: (field: keyof PatientFormState, value: string) => void;
+  onEmrChange: (field: keyof EmrFormState, value: string) => void;
+  onSavePatient: () => Promise<void> | void;
+  onSaveEmr: () => Promise<void> | void;
+  savingProfile: boolean;
+  savingEmr: boolean;
+}) {
+  return (
+    <Dialog open={open} onClose={onClose} fullWidth maxWidth="md">
+      <DialogTitle>Edit Patient & EMR</DialogTitle>
+      <DialogContent dividers sx={{ pt: 2 }}>
+        <Stack spacing={3}>
+          <Card
+            sx={{
+              border: "1px solid",
+              borderColor: "divider",
+              p: 2,
+            }}
+          >
+            <Stack
+              direction={{ xs: "column", sm: "row" }}
+              justifyContent="space-between"
+              alignItems={{ sm: "center" }}
+              spacing={1}
+              sx={{ mb: 2 }}
+            >
+              <Typography variant="h6" sx={{ fontWeight: 700 }}>
+                Patient Information
+              </Typography>
+              <Button
+                variant="contained"
+                onClick={onSavePatient}
+                disabled={savingProfile}
+                startIcon={
+                  savingProfile ? <CircularProgress size={18} /> : undefined
+                }
+              >
+                Save Patient
+              </Button>
+            </Stack>
+            <Stack spacing={2}>
+              <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
+                <TextField
+                  fullWidth
+                  label="First Name"
+                  value={patientForm.firstName}
+                  onChange={(event) =>
+                    onPatientChange("firstName", event.target.value)
+                  }
+                />
+                <TextField
+                  fullWidth
+                  label="Last Name"
+                  value={patientForm.lastName}
+                  onChange={(event) =>
+                    onPatientChange("lastName", event.target.value)
+                  }
+                />
+              </Stack>
+              <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
+                <TextField
+                  fullWidth
+                  label="Date of Birth"
+                  type="date"
+                  InputLabelProps={{ shrink: true }}
+                  value={patientForm.dateOfBirth}
+                  onChange={(event) =>
+                    onPatientChange("dateOfBirth", event.target.value)
+                  }
+                />
+                <TextField
+                  fullWidth
+                  label="Gender"
+                  select
+                  value={patientForm.gender}
+                  onChange={(event) =>
+                    onPatientChange("gender", event.target.value)
+                  }
+                >
+                  <MenuItem value="Male">Male</MenuItem>
+                  <MenuItem value="Female">Female</MenuItem>
+                  <MenuItem value="Non-binary">Non-binary</MenuItem>
+                  <MenuItem value="Other">Other</MenuItem>
+                </TextField>
+              </Stack>
+              <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
+                <TextField
+                  fullWidth
+                  label="Phone Number"
+                  value={patientForm.phoneNumber}
+                  onChange={(event) =>
+                    onPatientChange("phoneNumber", event.target.value)
+                  }
+                />
+                <TextField
+                  fullWidth
+                  label="Email"
+                  type="email"
+                  value={patientForm.email}
+                  onChange={(event) =>
+                    onPatientChange("email", event.target.value)
+                  }
+                />
+              </Stack>
+            </Stack>
+          </Card>
+
+          <Card
+            sx={{
+              border: "1px solid",
+              borderColor: "divider",
+              p: 2,
+            }}
+          >
+            <Stack
+              direction={{ xs: "column", sm: "row" }}
+              justifyContent="space-between"
+              alignItems={{ sm: "center" }}
+              spacing={1}
+              sx={{ mb: 2 }}
+            >
+              <Typography variant="h6" sx={{ fontWeight: 700 }}>
+                EMR
+              </Typography>
+              <Button
+                variant="contained"
+                onClick={onSaveEmr}
+                disabled={savingEmr}
+                startIcon={
+                  savingEmr ? <CircularProgress size={18} /> : undefined
+                }
+              >
+                Save EMR
+              </Button>
+            </Stack>
+            <Stack spacing={2}>
+              <TextField
+                fullWidth
+                label="Summary"
+                multiline
+                minRows={3}
+                value={emrForm.summary}
+                onChange={(event) => onEmrChange("summary", event.target.value)}
+              />
+              <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
+                <TextField
+                  fullWidth
+                  label="Primary Provider"
+                  value={emrForm.primaryProvider}
+                  onChange={(event) =>
+                    onEmrChange("primaryProvider", event.target.value)
+                  }
+                />
+                <TextField
+                  fullWidth
+                  label="Preferred Pharmacy"
+                  value={emrForm.preferredPharmacy}
+                  onChange={(event) =>
+                    onEmrChange("preferredPharmacy", event.target.value)
+                  }
+                />
+              </Stack>
+              <TextField
+                fullWidth
+                label="Last Review"
+                type="date"
+                InputLabelProps={{ shrink: true }}
+                value={emrForm.lastReview}
+                onChange={(event) =>
+                  onEmrChange("lastReview", event.target.value)
+                }
+              />
+            </Stack>
+          </Card>
+        </Stack>
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={onClose}>Close</Button>
+      </DialogActions>
+    </Dialog>
+  );
+}
+
 interface DataTableCardProps<Row extends { id: string }> {
   title: string;
   rows: Row[];
@@ -937,6 +1291,43 @@ function DataTableCard<Row extends { id: string }>({
     </Card>
   );
 }
+
+const toDateInputValue = (iso?: string | null) => {
+  if (!iso) return "";
+  const date = new Date(iso);
+  if (Number.isNaN(date.getTime())) return "";
+  return date.toISOString().split("T")[0];
+};
+
+const toPatientForm = (profile: ProfileData): PatientFormState => ({
+  firstName: profile.firstName || "",
+  lastName: profile.lastName || "",
+  dateOfBirth: toDateInputValue(profile.dateOfBirth),
+  gender: profile.gender || "",
+  phoneNumber: profile.phoneNumber || "",
+  email: profile.email || "",
+});
+
+const toEmrForm = (
+  medicalRecord: ProfileData["medicalRecord"]
+): EmrFormState => ({
+  summary: medicalRecord?.summary || "",
+  primaryProvider: medicalRecord?.primaryProvider || "",
+  preferredPharmacy: medicalRecord?.preferredPharmacy || "",
+  lastReview: toDateInputValue(medicalRecord?.lastReview ?? null),
+});
+
+const getAgeFromIso = (iso: string) => {
+  const dob = new Date(iso);
+  if (Number.isNaN(dob.getTime())) return 0;
+  const now = new Date();
+  let age = now.getFullYear() - dob.getFullYear();
+  const monthDiff = now.getMonth() - dob.getMonth();
+  if (monthDiff < 0 || (monthDiff === 0 && now.getDate() < dob.getDate())) {
+    age -= 1;
+  }
+  return age;
+};
 
 const formatLabel = (value: string) =>
   value
