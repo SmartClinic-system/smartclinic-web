@@ -104,8 +104,11 @@ const defaultDurationMinutes = 30;
 export default function PatientAppointmentsPage() {
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [currentDate, setCurrentDate] = useState<Dayjs>(dayjs());
-  const [viewMode, setViewMode] = useState<View>("week");
-  const [filters, setFilters] = useState<AppointmentStatus[]>(["APPROVED"]);
+  const [viewMode, setViewMode] = useState<View>("agenda");
+  const [filters, setFilters] = useState<AppointmentStatus[]>([
+    "APPROVED",
+    "PENDING",
+  ]);
   const [bookingOpen, setBookingOpen] = useState(false);
   const [feedback, setFeedback] = useState<{
     type: "success" | "error";
@@ -375,23 +378,6 @@ export default function PatientAppointmentsPage() {
             }}
           >
             <ToggleButtonGroup
-              value={viewMode}
-              exclusive
-              size="small"
-              onChange={(_, value) => value && setViewMode(value)}
-              sx={{
-                width: { xs: "100%", sm: "auto" },
-                "& .MuiToggleButton-root": {
-                  fontSize: { xs: "0.8rem", sm: "0.9rem" },
-                  px: { xs: 1, sm: 1.5 },
-                },
-              }}
-            >
-              <ToggleButton value="day">Day</ToggleButton>
-              <ToggleButton value="week">Week</ToggleButton>
-              <ToggleButton value="month">Month</ToggleButton>
-            </ToggleButtonGroup>
-            <ToggleButtonGroup
               value={filters}
               onChange={(_, values) => values.length && setFilters(values)}
               size="small"
@@ -477,17 +463,6 @@ export default function PatientAppointmentsPage() {
                 setForm((prev) => ({
                   ...prev,
                   start: dayjs(e.target.value).toISOString(),
-                }))
-              }
-            />
-            <TextField
-              label="Duration (minutes)"
-              type="number"
-              value={form.duration}
-              onChange={(e) =>
-                setForm((prev) => ({
-                  ...prev,
-                  duration: Number(e.target.value) || defaultDurationMinutes,
                 }))
               }
             />

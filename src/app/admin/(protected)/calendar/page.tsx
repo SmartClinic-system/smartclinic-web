@@ -7,7 +7,6 @@ import {
   ChevronLeft,
   ChevronRight,
   EditCalendar,
-  FilterAlt,
   Sms,
 } from "@mui/icons-material";
 import {
@@ -45,11 +44,7 @@ import "react-big-calendar/lib/css/react-big-calendar.css";
 dayjs.extend(utc);
 dayjs.extend(weekday);
 
-type AppointmentStatus =
-  | "PENDING"
-  | "APPROVED"
-  | "REJECTED"
-  | "CANCELLED";
+type AppointmentStatus = "PENDING" | "APPROVED" | "REJECTED" | "CANCELLED";
 
 type AppointmentType =
   | "CHECK_UP"
@@ -62,6 +57,7 @@ type AppointmentType =
 type Appointment = {
   id: string;
   patientId: string;
+  patientName: string | null;
   status: AppointmentStatus;
   type: AppointmentType;
   startTime: string;
@@ -79,7 +75,6 @@ type CalendarEvent = {
 };
 
 const localizer = dayjsLocalizer(dayjs);
-const MONTH_GRID_CELL_COUNT = 42;
 const initialCalendarDate = dayjs();
 const defaultDurationMinutes = 30;
 
@@ -109,11 +104,14 @@ const formatDateRange = (apt: Appointment | null) => {
 
 export default function AdminAppointmentsPage() {
   const [currentDate, setCurrentDate] = useState<Dayjs>(initialCalendarDate);
-  const [viewMode, setViewMode] = useState<View>("week");
+  const [viewMode, setViewMode] = useState<View>("agenda");
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [selectedAppointment, setSelectedAppointment] =
     useState<Appointment | null>(null);
-  const [filters, setFilters] = useState<AppointmentStatus[]>(["APPROVED"]);
+  const [filters, setFilters] = useState<AppointmentStatus[]>([
+    "APPROVED",
+    "PENDING",
+  ]);
   const [feedback, setFeedback] = useState<{
     type: "success" | "error";
     message: string;
@@ -159,7 +157,9 @@ export default function AdminAppointmentsPage() {
       setFeedback({
         type: "error",
         message:
-          error instanceof Error ? error.message : "Failed to load appointments.",
+          error instanceof Error
+            ? error.message
+            : "Failed to load appointments.",
       });
     } finally {
       setLoading(false);
@@ -172,8 +172,6 @@ export default function AdminAppointmentsPage() {
   }, []);
 
   const handleCalendarNavigate = (date: Date) => setCurrentDate(dayjs(date));
-
-  const handleCalendarViewChange = (nextView: View) => setViewMode(nextView);
 
   const handleSlotSelect = (_slot: SlotInfo) => {};
 
@@ -225,7 +223,9 @@ export default function AdminAppointmentsPage() {
       setFeedback({
         type: "error",
         message:
-          error instanceof Error ? error.message : "Unable to update appointment.",
+          error instanceof Error
+            ? error.message
+            : "Unable to update appointment.",
       });
     } finally {
       setLoading(false);
@@ -283,22 +283,6 @@ export default function AdminAppointmentsPage() {
     );
   };
 
-  const calendarDays = useMemo(() => {
-    const monthStart = currentDate.startOf("month");
-    const firstVisibleDay = monthStart.startOf("week");
-    return Array.from({ length: MONTH_GRID_CELL_COUNT }, (_, index) =>
-      firstVisibleDay.add(index, "day")
-    );
-  }, [currentDate]);
-
-  const getAppointmentsForDate = (date: Dayjs) => {
-    return filteredAppointments.filter((apt) =>
-      dayjs(apt.startTime).isSame(date, "day")
-    );
-  };
-
-  const isToday = (date: Dayjs) => date.isSame(dayjs(), "day");
-
   return (
     <Box sx={{ maxWidth: "1280px", mx: "auto", py: 4, px: { xs: 2, md: 0 } }}>
       <Box
@@ -316,7 +300,8 @@ export default function AdminAppointmentsPage() {
             Admin Appointments
           </Typography>
           <Typography sx={{ color: "text.secondary", mt: 0.5 }}>
-            Approve, reschedule, or cancel. Approved shown first; toggle pending to review requests.
+            Approve, reschedule, or cancel. Approved shown first; toggle pending
+            to review requests.
           </Typography>
         </Box>
         <ToggleButtonGroup
@@ -325,13 +310,18 @@ export default function AdminAppointmentsPage() {
           size="small"
           sx={{ flexWrap: "wrap" }}
         >
-          {(["APPROVED", "PENDING", "REJECTED", "CANCELLED"] as AppointmentStatus[]).map(
-            (status) => (
-              <ToggleButton key={status} value={status}>
-                {formatLabel(status)}
-              </ToggleButton>
-            )
-          )}
+          {(
+            [
+              "APPROVED",
+              "PENDING",
+              "REJECTED",
+              "CANCELLED",
+            ] as AppointmentStatus[]
+          ).map((status) => (
+            <ToggleButton key={status} value={status}>
+              {formatLabel(status)}
+            </ToggleButton>
+          ))}
         </ToggleButtonGroup>
       </Box>
 
@@ -363,7 +353,11 @@ export default function AdminAppointmentsPage() {
                   setCurrentDate(
                     currentDate.subtract(
                       1,
-                      viewMode === "month" ? "month" : viewMode === "week" ? "week" : "day"
+                      viewMode === "month"
+                        ? "month"
+                        : viewMode === "week"
+                        ? "week"
+                        : "day"
                     )
                   )
                 }
@@ -379,7 +373,11 @@ export default function AdminAppointmentsPage() {
                   setCurrentDate(
                     currentDate.add(
                       1,
-                      viewMode === "month" ? "month" : viewMode === "week" ? "week" : "day"
+                      viewMode === "month"
+                        ? "month"
+                        : viewMode === "week"
+                        ? "week"
+                        : "day"
                     )
                   )
                 }
@@ -390,26 +388,6 @@ export default function AdminAppointmentsPage() {
                 Today
               </Button>
             </Box>
-
-            <ToggleButtonGroup
-              value={viewMode}
-              exclusive
-              onChange={(_, value) => value && setViewMode(value)}
-              size="small"
-            >
-              <ToggleButton value="day">Day</ToggleButton>
-              <ToggleButton value="week">Week</ToggleButton>
-              <ToggleButton value="month">Month</ToggleButton>
-            </ToggleButtonGroup>
-
-            <Button
-              variant="outlined"
-              startIcon={<FilterAlt />}
-              onClick={() => handleFiltersChange(null, ["PENDING", "APPROVED"])}
-              size="small"
-            >
-              Show Pending
-            </Button>
           </Box>
 
           <Box sx={{ flex: 1, mt: 2 }}>
@@ -465,10 +443,11 @@ export default function AdminAppointmentsPage() {
             {selectedAppointment ? (
               <Stack spacing={1.5}>
                 <Typography variant="body2" sx={{ color: "text.secondary" }}>
-                  Patient ID
+                  Patient
                 </Typography>
                 <Typography sx={{ fontWeight: 600 }}>
-                  {selectedAppointment.patientId}
+                  {selectedAppointment.patientName ||
+                    selectedAppointment.patientId}
                 </Typography>
                 <Typography variant="body2" sx={{ color: "text.secondary" }}>
                   Type
@@ -491,7 +470,10 @@ export default function AdminAppointmentsPage() {
                 </Typography>
                 {selectedAppointment.notes ? (
                   <>
-                    <Typography variant="body2" sx={{ color: "text.secondary" }}>
+                    <Typography
+                      variant="body2"
+                      sx={{ color: "text.secondary" }}
+                    >
                       Notes
                     </Typography>
                     <Typography sx={{ fontWeight: 500 }}>
@@ -589,7 +571,11 @@ export default function AdminAppointmentsPage() {
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setRescheduleOpen(false)}>Close</Button>
-          <Button onClick={submitReschedule} variant="contained" disabled={loading}>
+          <Button
+            onClick={submitReschedule}
+            variant="contained"
+            disabled={loading}
+          >
             Save
           </Button>
         </DialogActions>
@@ -614,4 +600,3 @@ export default function AdminAppointmentsPage() {
     </Box>
   );
 }
-

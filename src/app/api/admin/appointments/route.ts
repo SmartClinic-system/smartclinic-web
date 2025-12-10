@@ -19,6 +19,9 @@ const toISO = (value: Date | null | undefined) =>
 const normalizeAppointment = (apt: any) => ({
   id: apt.id,
   patientId: apt.patientId,
+  patientName: apt.patient
+    ? `${apt.patient.firstName} ${apt.patient.lastName}`
+    : null,
   status: apt.status,
   type: apt.type,
   startTime: toISO(apt.startTime),
@@ -57,6 +60,14 @@ export async function GET(request: NextRequest, _: RouteParams) {
     const appointments = await prisma.appointment.findMany({
       where: statuses ? { status: { in: statuses as any } } : undefined,
       orderBy: [{ status: "asc" }, { startTime: "asc" }],
+      include: {
+        patient: {
+          select: {
+            firstName: true,
+            lastName: true,
+          },
+        },
+      },
     });
 
     return NextResponse.json({
@@ -133,6 +144,14 @@ export async function PUT(request: NextRequest, _: RouteParams) {
         type: body?.type ?? undefined,
         notes: body?.notes ?? undefined,
         isRescheduled,
+      },
+      include: {
+        patient: {
+          select: {
+            firstName: true,
+            lastName: true,
+          },
+        },
       },
     });
 
