@@ -233,18 +233,27 @@ export default function PatientAppointmentsPage() {
   };
 
   return (
-    <Box sx={{ maxWidth: "1280px", mx: "auto", py: 4, px: { xs: 2, md: 0 } }}>
+    <Box
+      sx={{
+        maxWidth: "1280px",
+        mx: "auto",
+        py: { xs: 2, md: 4 },
+        px: { xs: 2, md: 0 },
+        display: "flex",
+        flexDirection: "column",
+        gap: 3,
+      }}
+    >
       <Box
         sx={{
           display: "flex",
-          flexWrap: "wrap",
+          flexDirection: { xs: "column", sm: "row" },
           justifyContent: "space-between",
-          alignItems: "center",
+          alignItems: { xs: "flex-start", sm: "center" },
           gap: 2,
-          mb: 3,
         }}
       >
-        <Box>
+        <Box sx={{ width: "100%" }}>
           <Typography
             variant="h4"
             sx={{
@@ -252,6 +261,7 @@ export default function PatientAppointmentsPage() {
               display: "flex",
               alignItems: "center",
               gap: 1,
+              fontSize: { xs: "1.35rem", sm: "1.6rem", md: "1.8rem" },
             }}
           >
             <CalendarMonth /> My Appointments
@@ -260,26 +270,44 @@ export default function PatientAppointmentsPage() {
             View and request appointments. Default duration is 30 minutes.
           </Typography>
         </Box>
-        <Stack direction="row" spacing={1}>
+        <Stack
+          direction="row"
+          spacing={1}
+          sx={{ width: { xs: "100%", sm: "auto" }, justifyContent: "flex-end" }}
+        >
           <Button
             variant="contained"
             startIcon={<Add />}
             onClick={() => setBookingOpen(true)}
+            size="small"
+            sx={{
+              width: { xs: "100%", sm: "auto" },
+              fontSize: { xs: "0.9rem", sm: "0.95rem" },
+              py: { xs: 1, sm: 1.2 },
+            }}
           >
             Book
           </Button>
         </Stack>
       </Box>
 
-      <Card sx={{ p: 2, mb: 3 }}>
+      <Card sx={{ p: { xs: 2, md: 3 }, mb: 1 }}>
         <Stack
-          direction={{ xs: "column", sm: "row" }}
+          direction={{ xs: "column", md: "row" }}
           spacing={2}
-          alignItems={{ sm: "center" }}
+          alignItems={{ md: "center" }}
           justifyContent="space-between"
           sx={{ mb: 2 }}
         >
-          <Stack direction="row" spacing={1} alignItems="center">
+          <Stack
+            direction="row"
+            spacing={1}
+            alignItems="center"
+            sx={{
+              width: "100%",
+              justifyContent: { xs: "space-between", md: "flex-start" },
+            }}
+          >
             <IconButton
               size="small"
               onClick={() =>
@@ -299,7 +327,10 @@ export default function PatientAppointmentsPage() {
             >
               <ChevronLeft />
             </IconButton>
-            <Typography variant="h6">
+            <Typography
+              variant="h6"
+              sx={{ fontSize: { xs: "1rem", sm: "1.1rem", md: "1.25rem" } }}
+            >
               {currentDate.format("MMMM YYYY")}
             </Typography>
             <IconButton
@@ -321,55 +352,94 @@ export default function PatientAppointmentsPage() {
             >
               <ChevronRight />
             </IconButton>
-            <Button size="small" variant="outlined" onClick={handleGoToToday}>
+            <Button
+              size="small"
+              variant="outlined"
+              onClick={handleGoToToday}
+              sx={{
+                fontSize: { xs: "0.85rem", sm: "0.9rem" },
+                px: 1.5,
+                py: 0.75,
+              }}
+            >
               Today
             </Button>
           </Stack>
-          <ToggleButtonGroup
-            value={viewMode}
-            exclusive
-            size="small"
-            onChange={(_, value) => value && setViewMode(value)}
+          <Stack
+            direction={{ xs: "column", sm: "row" }}
+            spacing={1}
+            sx={{
+              width: "100%",
+              justifyContent: "flex-end",
+              alignItems: { xs: "stretch", sm: "center" },
+            }}
           >
-            <ToggleButton value="day">Day</ToggleButton>
-            <ToggleButton value="week">Week</ToggleButton>
-            <ToggleButton value="month">Month</ToggleButton>
-          </ToggleButtonGroup>
-          <ToggleButtonGroup
-            value={filters}
-            onChange={(_, values) => values.length && setFilters(values)}
-            size="small"
-          >
-            {(
-              [
-                "APPROVED",
-                "PENDING",
-                "REJECTED",
-                "CANCELLED",
-              ] as AppointmentStatus[]
-            ).map((status) => (
-              <ToggleButton key={status} value={status}>
-                {formatLabel(status)}
-              </ToggleButton>
-            ))}
-          </ToggleButtonGroup>
+            <ToggleButtonGroup
+              value={viewMode}
+              exclusive
+              size="small"
+              onChange={(_, value) => value && setViewMode(value)}
+              sx={{
+                width: { xs: "100%", sm: "auto" },
+                "& .MuiToggleButton-root": {
+                  fontSize: { xs: "0.8rem", sm: "0.9rem" },
+                  px: { xs: 1, sm: 1.5 },
+                },
+              }}
+            >
+              <ToggleButton value="day">Day</ToggleButton>
+              <ToggleButton value="week">Week</ToggleButton>
+              <ToggleButton value="month">Month</ToggleButton>
+            </ToggleButtonGroup>
+            <ToggleButtonGroup
+              value={filters}
+              onChange={(_, values) => values.length && setFilters(values)}
+              size="small"
+              sx={{
+                width: { xs: "100%", sm: "auto" },
+                "& .MuiToggleButton-root": {
+                  fontSize: { xs: "0.8rem", sm: "0.9rem" },
+                  px: { xs: 1, sm: 1.5 },
+                },
+              }}
+            >
+              {(
+                [
+                  "APPROVED",
+                  "PENDING",
+                  "REJECTED",
+                  "CANCELLED",
+                ] as AppointmentStatus[]
+              ).map((status) => (
+                <ToggleButton
+                  key={status}
+                  value={status}
+                  sx={{ flex: 1, fontSize: { xs: "0.8rem", sm: "0.9rem" } }}
+                >
+                  {formatLabel(status)}
+                </ToggleButton>
+              ))}
+            </ToggleButtonGroup>
+          </Stack>
         </Stack>
 
-        <BigCalendar
-          localizer={localizer}
-          events={events}
-          date={currentDate.toDate()}
-          view={viewMode}
-          onView={(v: View) => setViewMode(v)}
-          onNavigate={handleCalendarNavigate}
-          selectable
-          onSelectSlot={handleSlotSelect}
-          startAccessor="start"
-          endAccessor="end"
-          style={{ height: 640 }}
-          components={{}}
-          eventPropGetter={eventPropGetter}
-        />
+        <Box sx={{ height: { xs: 480, sm: 560, md: 640 } }}>
+          <BigCalendar
+            localizer={localizer}
+            events={events}
+            date={currentDate.toDate()}
+            view={viewMode}
+            onView={(v: View) => setViewMode(v)}
+            onNavigate={handleCalendarNavigate}
+            selectable
+            onSelectSlot={handleSlotSelect}
+            startAccessor="start"
+            endAccessor="end"
+            style={{ height: "100%" }}
+            components={{}}
+            eventPropGetter={eventPropGetter}
+          />
+        </Box>
       </Card>
 
       <Dialog

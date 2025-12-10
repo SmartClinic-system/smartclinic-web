@@ -13,7 +13,9 @@ export default function PatientProtectedLayoutContent({
 }) {
   return (
     <Box sx={{ display: "flex", minHeight: "100vh" }}>
-      <PatientSidebar />
+      <Box sx={{ display: { xs: "none", md: "block" } }}>
+        <PatientSidebar />
+      </Box>
       <Box
         component="main"
         sx={{
@@ -21,6 +23,7 @@ export default function PatientProtectedLayoutContent({
           display: "flex",
           flexDirection: "column",
           overflow: "hidden",
+          backgroundColor: "background.default",
         }}
       >
         <PatientHeader />
@@ -28,8 +31,10 @@ export default function PatientProtectedLayoutContent({
           sx={{
             flex: 1,
             overflow: "auto",
-            p: 4,
-            backgroundColor: "background.default",
+            p: { xs: 2, md: 4 },
+            maxWidth: "1280px",
+            width: "100%",
+            mx: "auto",
           }}
         >
           {children}
