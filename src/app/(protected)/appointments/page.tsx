@@ -38,12 +38,14 @@ import localizedFormat from "dayjs/plugin/localizedFormat";
 import utc from "dayjs/plugin/utc";
 import weekday from "dayjs/plugin/weekday";
 import "react-big-calendar/lib/css/react-big-calendar.css";
+import {
+  APPOINTMENT_STATUS_COLORS,
+  type AppointmentStatus,
+} from "@/lib/constants";
 
 dayjs.extend(localizedFormat);
 dayjs.extend(utc);
 dayjs.extend(weekday);
-
-type AppointmentStatus = "PENDING" | "APPROVED" | "REJECTED" | "CANCELLED";
 
 type AppointmentType =
   | "CHECK_UP"
@@ -73,15 +75,6 @@ type CalendarEvent = {
 };
 
 const localizer = dayjsLocalizer(dayjs);
-const STATUS_COLORS: Record<
-  AppointmentStatus,
-  { bg: string; border: string; text: string }
-> = {
-  APPROVED: { bg: "#e8f5e9", border: "#2e7d32", text: "#1b5e20" },
-  PENDING: { bg: "#fff8e1", border: "#f9a825", text: "#f57f17" },
-  REJECTED: { bg: "#ffebee", border: "#c62828", text: "#b71c1c" },
-  CANCELLED: { bg: "#eceff1", border: "#607d8b", text: "#455a64" },
-};
 
 const APPOINTMENT_TYPES: AppointmentType[] = [
   "CHECK_UP",
@@ -220,7 +213,8 @@ export default function PatientAppointmentsPage() {
 
   const handleGoToToday = () => setCurrentDate(dayjs());
 
-  const colorsForStatus = (status: AppointmentStatus) => STATUS_COLORS[status];
+  const colorsForStatus = (status: AppointmentStatus) =>
+    APPOINTMENT_STATUS_COLORS[status];
 
   const eventPropGetter = (event: CalendarEvent) => {
     const colors = colorsForStatus(event.resource.status);
