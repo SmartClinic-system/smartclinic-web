@@ -111,10 +111,11 @@ export default function PatientAppointmentsPage() {
   const [form, setForm] = useState({
     type: "CHECK_UP" as AppointmentType,
     start: dayjs()
+      .add(1, "day")
+      .hour(9)
       .minute(0)
       .second(0)
       .millisecond(0)
-      .add(1, "hour")
       .toISOString(),
     duration: defaultDurationMinutes,
     notes: "",
@@ -452,6 +453,9 @@ export default function PatientAppointmentsPage() {
               label="Start"
               type="datetime-local"
               InputLabelProps={{ shrink: true }}
+              inputProps={{
+                min: dayjs().add(1, "day").format("YYYY-MM-DDTHH:mm"),
+              }}
               value={dayjs(form.start).format("YYYY-MM-DDTHH:mm")}
               onChange={(e) =>
                 setForm((prev) => ({
