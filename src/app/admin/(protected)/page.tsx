@@ -12,9 +12,7 @@ import {
   Grid,
   List,
   ListItem,
-  Button,
 } from "@mui/material";
-import { Add, PersonAdd, Sms } from "@mui/icons-material";
 
 export default function AdminDashboardPage() {
   const appointments = [

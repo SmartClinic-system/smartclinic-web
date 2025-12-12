@@ -10,9 +10,8 @@ import {
   ListItemButton,
   ListItemIcon,
   ListItemText,
-  Button,
 } from "@mui/material";
-import { Dashboard, CalendarMonth, Groups, Add } from "@mui/icons-material";
+import { Dashboard, CalendarMonth, Groups } from "@mui/icons-material";
 import Image from "next/image";
 
 export const ADMIN_DRAWER_WIDTH = 256;
