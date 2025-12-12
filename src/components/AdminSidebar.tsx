@@ -13,7 +13,7 @@ import {
   Button,
 } from "@mui/material";
 import { Dashboard, CalendarMonth, Groups, Add } from "@mui/icons-material";
-import SmartClinicLogo from "./SmartClinicLogo";
+import Image from "next/image";
 
 export const ADMIN_DRAWER_WIDTH = 256;
 
@@ -64,7 +64,14 @@ export default function AdminSidebar() {
       }}
     >
       <Box sx={{ px: 1, mb: 3 }}>
-        <SmartClinicLogo size="small" />
+        <Image
+          src="/smart-clinic-logo.png"
+          alt="Smart Clinic"
+          width={105}
+          height={30}
+          priority
+          style={{ height: "auto", width: "auto" }}
+        />
       </Box>
 
       <List sx={{ flex: 1, px: 0, mt: 2 }}>

@@ -2,8 +2,8 @@
 
 import { Box } from "@mui/material";
 import type { ReactNode } from "react";
+import Image from "next/image";
 import Footer from "@/components/Footer";
-import SmartClinicLogo from "@/components/SmartClinicLogo";
 
 export default function AdminAuthLayoutContent({
   children,
@@ -38,7 +38,14 @@ export default function AdminAuthLayoutContent({
             justifyContent: "center",
           }}
         >
-          <SmartClinicLogo size="medium" />
+          <Image
+            src="/smart-clinic-logo.png"
+            alt="Smart Clinic"
+            width={140}
+            height={40}
+            priority
+            style={{ height: "auto", width: "auto" }}
+          />
         </Box>
         {children}
         <Footer />

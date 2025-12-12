@@ -4,7 +4,7 @@ import { Box } from "@mui/material";
 import type { ReactNode } from "react";
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import SmartClinicLogo from "@/components/SmartClinicLogo";
+import Image from "next/image";
 import Footer from "@/components/Footer";
 import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
 
@@ -74,7 +74,14 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
             justifyContent: "center",
           }}
         >
-          <SmartClinicLogo size="medium" />
+          <Image
+            src="/smart-clinic-logo.png"
+            alt="Smart Clinic"
+            width={140}
+            height={40}
+            priority
+            style={{ height: "auto", width: "auto" }}
+          />
         </Box>
         {children}
         <Footer />

@@ -18,7 +18,7 @@ import {
   AddCircle,
   Dashboard,
 } from "@mui/icons-material";
-import SmartClinicLogo from "./SmartClinicLogo";
+import Image from "next/image";
 
 const drawerWidth = 240;
 
@@ -61,7 +61,14 @@ export default function PatientSidebar() {
       }}
     >
       <Box sx={{ px: 1, mb: 2 }}>
-        <SmartClinicLogo size="small" />
+        <Image
+          src="/smart-clinic-logo.png"
+          alt="Smart Clinic"
+          width={105}
+          height={30}
+          priority
+          style={{ height: "auto", width: "auto" }}
+        />
       </Box>
 
       <List sx={{ flex: 1, px: 0, mt: 2 }}>
