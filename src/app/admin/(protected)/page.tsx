@@ -1,9 +1,9 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import {
   Box,
   Typography,
-  Avatar,
   Card,
   CardContent,
   Chip,
@@ -12,44 +12,58 @@ import {
   Grid,
   List,
   ListItem,
+  CircularProgress,
 } from "@mui/material";
 
-export default function AdminDashboardPage() {
-  const appointments = [
-    {
-      id: 1,
-      name: "Liam Johnson",
-      time: "09:00 AM",
-      type: "Annual Check-up",
-      status: "Upcoming",
-      avatar:
-        "https://lh3.googleusercontent.com/aida-public/AB6AXuCTlRaOrehfynwbcBVyFG6QPDyBo0szAK3DVeuS1ThT-KzoOz7Uf8VxNnGNTK5yp-Iv_QRGz7Vj1hiuaXjwRzEAdpY4ycb7PN1RYQp8zHM01ALpnRnKcvpL6snqxgKQ86vwtwzv0eE0ppYlme2w1S200CYyAkNXzL3p-MWcafuSuCNIzKi4yUG_N365Kph72GWbEGG0gYMkh0TtGdJoqXzXnSzJNqCCIH6u0nCpMatf2fKfbefn8asR38XFX_HXVCRHsVnV6Cyc1aQ",
-    },
-    {
-      id: 2,
-      name: "Olivia Chen",
-      time: "10:30 AM",
-      type: "Follow-up",
-      status: "Checked-in",
-      avatar:
-        "https://lh3.googleusercontent.com/aida-public/AB6AXuAgKcDBt-nVE_kkbxvk4U14H-GNVNxVtg4eu_cG2xUsY4Xj5kZF5u3VMZ6ud2lXClOGwPxWJyCJ3ZpzMJG0mXYWyadWj4GY7QTYnTufMwYhtr0J5IxesZrT09Xi2jLByxnzpxlfjAKZjucUbSK0Zmpb82Xzc77wA8RCB6Whc1odlFHRd-qB_XdDfd0sohNlacuBokjL1h3Bdw6hg6n_Na3W1SaJ8B71hgzh46H_E3eMo3Koyvmm8BXgmdOpaxr_JKr2RnsUYcATwhU",
-    },
-    {
-      id: 3,
-      name: "Noah Patel",
-      time: "11:15 AM",
-      type: "Consultation",
-      status: "Upcoming",
-      avatar:
-        "https://lh3.googleusercontent.com/aida-public/AB6AXuANqtmcv8tvs-Q4Rr82gQhS5xi5XQ-f5P2pDf74KG29Igx-ogpHNhrl4hFLA-OjPpaqAiqwwKnibcivtsvlI_mYHnloHxgzGD5q0P03nq1W0UprB8JH6jn1yyfOJszN6U7sc7KvbdBwzFPtguAsj9ceZQx2JlPq9uWPkltZv5s6RJAuEAdv3yl8rKeiNjworNaOF7H9DM1XpEba2RbD_pbxVIi2V0ynPfL0txwGWDfddz3MTMhb8xkuCdJYRTijy3CuTFfkCp6hA8w",
-    },
-  ];
+type Appointment = {
+  id: string;
+  name: string;
+  time: string;
+  type: string;
+  status: string;
+  originalStatus: string;
+};
 
-  const newPatients = [
-    { name: "Emma Rodriguez", link: "#" },
-    { name: "James Wilson", link: "#" },
-    { name: "Sophia Garcia", link: "#" },
-  ];
+type Patient = {
+  id: string;
+  name: string;
+};
+
+type DashboardData = {
+  appointmentsTodayCount: number;
+  newPatientsThisWeekCount: number;
+  todaysAppointments: Appointment[];
+  newPatientsThisWeek: Patient[];
+};
+
+export default function AdminDashboardPage() {
+  const [dashboardData, setDashboardData] = useState<DashboardData | null>(
+    null
+  );
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchDashboardData = async () => {
+      try {
+        setLoading(true);
+        const response = await fetch("/api/admin/dashboard");
+        if (!response.ok) {
+          throw new Error("Failed to fetch dashboard data");
+        }
+        const data = await response.json();
+        setDashboardData(data);
+        setError(null);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "An error occurred");
+        console.error("Error fetching dashboard data:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchDashboardData();
+  }, []);
 
   const getCurrentDate = () => {
     const today = new Date();
@@ -82,10 +96,35 @@ export default function AdminDashboardPage() {
   };
 
   const getStatusColor = (status: string) => {
-    if (status === "Checked-in") return "success";
     if (status === "Upcoming") return "warning";
+    if (status === "Rejected" || status === "Cancelled") return "default";
     return "default";
   };
+
+  if (loading) {
+    return (
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          minHeight: "400px",
+        }}
+      >
+        <CircularProgress />
+      </Box>
+    );
+  }
+
+  if (error || !dashboardData) {
+    return (
+      <Box sx={{ p: 3 }}>
+        <Typography variant="h6" color="error">
+          {error || "Failed to load dashboard data"}
+        </Typography>
+      </Box>
+    );
+  }
 
   return (
     <>
@@ -136,7 +175,7 @@ export default function AdminDashboardPage() {
                   lineHeight: 1.2,
                 }}
               >
-                14
+                {dashboardData.appointmentsTodayCount}
               </Typography>
             </CardContent>
           </Card>
@@ -164,7 +203,7 @@ export default function AdminDashboardPage() {
                   lineHeight: 1.2,
                 }}
               >
-                3
+                {dashboardData.newPatientsThisWeekCount}
               </Typography>
             </CardContent>
           </Card>
@@ -197,24 +236,28 @@ export default function AdminDashboardPage() {
               Today&apos;s Appointments
             </Typography>
             <List>
-              {appointments.map((appointment, index) => (
-                <Box key={appointment.id}>
-                  {index > 0 && <Divider />}
-                  <ListItem
-                    sx={{
-                      py: 3,
-                      px: 3,
-                      display: "flex",
-                      justifyContent: "space-between",
-                      alignItems: "center",
-                    }}
+              {dashboardData.todaysAppointments.length === 0 ? (
+                <ListItem>
+                  <Typography
+                    variant="body2"
+                    sx={{ color: "text.secondary", py: 2 }}
                   >
-                    <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-                      <Avatar
-                        src={appointment.avatar}
-                        alt={`Profile picture of ${appointment.name}`}
-                        sx={{ width: 40, height: 40 }}
-                      />
+                    No appointments scheduled for today
+                  </Typography>
+                </ListItem>
+              ) : (
+                dashboardData.todaysAppointments.map((appointment, index) => (
+                  <Box key={appointment.id}>
+                    {index > 0 && <Divider />}
+                    <ListItem
+                      sx={{
+                        py: 3,
+                        px: 3,
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                      }}
+                    >
                       <Box>
                         <Typography
                           variant="body2"
@@ -232,31 +275,31 @@ export default function AdminDashboardPage() {
                           {appointment.time} - {appointment.type}
                         </Typography>
                       </Box>
-                    </Box>
-                    <Chip
-                      label={appointment.status}
-                      color={
-                        getStatusColor(appointment.status) as
-                          | "success"
-                          | "warning"
-                      }
-                      size="small"
-                      sx={{
-                        backgroundColor:
-                          appointment.status === "Checked-in"
-                            ? "rgba(80, 227, 194, 0.2)"
-                            : "rgba(245, 166, 35, 0.2)",
-                        color:
-                          appointment.status === "Checked-in"
-                            ? "success.main"
-                            : "warning.main",
-                        fontWeight: 500,
-                        fontSize: "0.75rem",
-                      }}
-                    />
-                  </ListItem>
-                </Box>
-              ))}
+                      <Chip
+                        label={appointment.status}
+                        color={
+                          getStatusColor(appointment.status) as
+                            | "success"
+                            | "warning"
+                        }
+                        size="small"
+                        sx={{
+                          backgroundColor:
+                            appointment.status === "Upcoming"
+                              ? "rgba(245, 166, 35, 0.2)"
+                              : "rgba(0, 0, 0, 0.1)",
+                          color:
+                            appointment.status === "Upcoming"
+                              ? "warning.main"
+                              : "text.secondary",
+                          fontWeight: 500,
+                          fontSize: "0.75rem",
+                        }}
+                      />
+                    </ListItem>
+                  </Box>
+                ))
+              )}
             </List>
           </Card>
         </Grid>
@@ -280,41 +323,52 @@ export default function AdminDashboardPage() {
                 New Patient Registrations
               </Typography>
               <List>
-                {newPatients.map((patient, index) => (
-                  <Box key={patient.name}>
-                    {index > 0 && <Divider sx={{ my: 1 }} />}
-                    <ListItem disablePadding>
-                      <Box
-                        sx={{
-                          display: "flex",
-                          justifyContent: "space-between",
-                          alignItems: "center",
-                          width: "100%",
-                        }}
-                      >
-                        <Typography
-                          variant="body2"
-                          sx={{ fontSize: "0.875rem", fontWeight: 500 }}
-                        >
-                          {patient.name}
-                        </Typography>
-                        <Link
-                          href={patient.link}
+                {dashboardData.newPatientsThisWeek.length === 0 ? (
+                  <ListItem>
+                    <Typography
+                      variant="body2"
+                      sx={{ color: "text.secondary", py: 2 }}
+                    >
+                      No new patients this week
+                    </Typography>
+                  </ListItem>
+                ) : (
+                  dashboardData.newPatientsThisWeek.map((patient, index) => (
+                    <Box key={patient.id}>
+                      {index > 0 && <Divider sx={{ my: 1 }} />}
+                      <ListItem disablePadding>
+                        <Box
                           sx={{
-                            fontSize: "0.875rem",
-                            color: "primary.main",
-                            textDecoration: "none",
-                            "&:hover": {
-                              textDecoration: "underline",
-                            },
+                            display: "flex",
+                            justifyContent: "space-between",
+                            alignItems: "center",
+                            width: "100%",
                           }}
                         >
-                          View Profile
-                        </Link>
-                      </Box>
-                    </ListItem>
-                  </Box>
-                ))}
+                          <Typography
+                            variant="body2"
+                            sx={{ fontSize: "0.875rem", fontWeight: 500 }}
+                          >
+                            {patient.name}
+                          </Typography>
+                          <Link
+                            href={`/admin/patients/${patient.id}`}
+                            sx={{
+                              fontSize: "0.875rem",
+                              color: "primary.main",
+                              textDecoration: "none",
+                              "&:hover": {
+                                textDecoration: "underline",
+                              },
+                            }}
+                          >
+                            View Profile
+                          </Link>
+                        </Box>
+                      </ListItem>
+                    </Box>
+                  ))
+                )}
               </List>
             </Card>
           </Box>
