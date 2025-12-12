@@ -12,7 +12,10 @@ import {
   Button,
   Typography,
   Link,
+  IconButton,
+  InputAdornment,
 } from "@mui/material";
+import { Visibility, VisibilityOff } from "@mui/icons-material";
 import { AuthApiError } from "@supabase/supabase-js";
 import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
 
@@ -44,9 +47,19 @@ const sharedFieldStyles = {
 
 export default function RegisterPage() {
   const router = useRouter();
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
   const [formSuccess, setFormSuccess] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleTogglePasswordVisibility = () => {
+    setShowPassword(!showPassword);
+  };
+
+  const handleToggleConfirmPasswordVisibility = () => {
+    setShowConfirmPassword(!showConfirmPassword);
+  };
 
   const form = useForm({
     defaultValues: {
@@ -226,7 +239,7 @@ export default function RegisterPage() {
               </Typography>
               <TextField
                 id="password"
-                type="password"
+                type={showPassword ? "text" : "password"}
                 placeholder="Create a strong password"
                 value={field.state.value}
                 onChange={(e) => field.handleChange(e.target.value)}
@@ -234,6 +247,22 @@ export default function RegisterPage() {
                 required
                 fullWidth
                 sx={sharedFieldStyles}
+                InputProps={{
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <IconButton
+                        aria-label="Toggle password visibility"
+                        onClick={handleTogglePasswordVisibility}
+                        edge="end"
+                        sx={{
+                          color: "#6b7280",
+                        }}
+                      >
+                        {showPassword ? <VisibilityOff /> : <Visibility />}
+                      </IconButton>
+                    </InputAdornment>
+                  ),
+                }}
               />
             </Box>
           )}
@@ -257,7 +286,7 @@ export default function RegisterPage() {
               </Typography>
               <TextField
                 id="confirm-password"
-                type="password"
+                type={showConfirmPassword ? "text" : "password"}
                 placeholder="Confirm your password"
                 value={field.state.value}
                 onChange={(e) => field.handleChange(e.target.value)}
@@ -265,6 +294,26 @@ export default function RegisterPage() {
                 required
                 fullWidth
                 sx={sharedFieldStyles}
+                InputProps={{
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <IconButton
+                        aria-label="Toggle confirm password visibility"
+                        onClick={handleToggleConfirmPasswordVisibility}
+                        edge="end"
+                        sx={{
+                          color: "#6b7280",
+                        }}
+                      >
+                        {showConfirmPassword ? (
+                          <VisibilityOff />
+                        ) : (
+                          <Visibility />
+                        )}
+                      </IconButton>
+                    </InputAdornment>
+                  ),
+                }}
               />
             </Box>
           )}
