@@ -116,22 +116,6 @@ export default function AdminSidebar() {
           );
         })}
       </List>
-
-      <Button
-        variant="contained"
-        startIcon={<Add />}
-        fullWidth
-        sx={{
-          mt: "auto",
-          textTransform: "none",
-          fontSize: "0.875rem",
-          fontWeight: 500,
-          minWidth: 84,
-          height: 40,
-        }}
-      >
-        New Patient
-      </Button>
     </Drawer>
   );
 }

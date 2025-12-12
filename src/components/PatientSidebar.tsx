@@ -35,7 +35,11 @@ const navItems: NavItem[] = [
     path: "/appointments",
     icon: <EventAvailable sx={{ fontSize: 20 }} />,
   },
-  { label: "Profile", path: "/profile", icon: <Person sx={{ fontSize: 20 }} /> },
+  {
+    label: "Profile",
+    path: "/profile",
+    icon: <Person sx={{ fontSize: 20 }} />,
+  },
 ];
 
 export default function PatientSidebar() {
@@ -135,5 +139,3 @@ export default function PatientSidebar() {
     </Drawer>
   );
 }
-
-

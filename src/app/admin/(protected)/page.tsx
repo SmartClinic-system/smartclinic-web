@@ -171,34 +171,6 @@ export default function AdminDashboardPage() {
             </CardContent>
           </Card>
         </Grid>
-        <Grid size={{ xs: 12, md: 4 }}>
-          <Card
-            sx={{
-              borderRadius: 3,
-              border: "1px solid",
-              borderColor: "divider",
-            }}
-          >
-            <CardContent sx={{ p: 3 }}>
-              <Typography
-                variant="body2"
-                sx={{ mb: 1, fontSize: "1rem", fontWeight: 500 }}
-              >
-                Unread Messages
-              </Typography>
-              <Typography
-                variant="h3"
-                sx={{
-                  fontSize: "1.875rem",
-                  fontWeight: 700,
-                  lineHeight: 1.2,
-                }}
-              >
-                5
-              </Typography>
-            </CardContent>
-          </Card>
-        </Grid>
       </Grid>
 
       {/* Main Content Grid */}
@@ -294,81 +266,6 @@ export default function AdminDashboardPage() {
         {/* Sidebar */}
         <Grid size={{ xs: 12, lg: 4 }}>
           <Box sx={{ display: "flex", flexDirection: "column", gap: 4 }}>
-            {/* Quick Actions */}
-            <Card
-              sx={{
-                borderRadius: 3,
-                border: "1px solid",
-                borderColor: "divider",
-                p: 3,
-              }}
-            >
-              <Typography
-                variant="h6"
-                sx={{ fontSize: "1.125rem", fontWeight: 700, mb: 2 }}
-              >
-                Quick Actions
-              </Typography>
-              <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
-                <Button
-                  variant="contained"
-                  startIcon={<Add />}
-                  fullWidth
-                  sx={{
-                    justifyContent: "flex-start",
-                    textTransform: "none",
-                    fontSize: "0.875rem",
-                    fontWeight: 600,
-                    py: 1.25,
-                  }}
-                >
-                  Book New Appointment
-                </Button>
-                <Button
-                  variant="outlined"
-                  startIcon={<PersonAdd />}
-                  fullWidth
-                  sx={{
-                    justifyContent: "flex-start",
-                    textTransform: "none",
-                    fontSize: "0.875rem",
-                    fontWeight: 600,
-                    py: 1.25,
-                    borderColor: "primary.main",
-                    color: "primary.main",
-                    backgroundColor: "rgba(19, 127, 236, 0.2)",
-                    "&:hover": {
-                      backgroundColor: "rgba(19, 127, 236, 0.3)",
-                      borderColor: "primary.main",
-                    },
-                  }}
-                >
-                  Register New Patient
-                </Button>
-                <Button
-                  variant="outlined"
-                  startIcon={<Sms />}
-                  fullWidth
-                  sx={{
-                    justifyContent: "flex-start",
-                    textTransform: "none",
-                    fontSize: "0.875rem",
-                    fontWeight: 600,
-                    py: 1.25,
-                    borderColor: "primary.main",
-                    color: "primary.main",
-                    backgroundColor: "rgba(19, 127, 236, 0.2)",
-                    "&:hover": {
-                      backgroundColor: "rgba(19, 127, 236, 0.3)",
-                      borderColor: "primary.main",
-                    },
-                  }}
-                >
-                  Send SMS Broadcast
-                </Button>
-              </Box>
-            </Card>
-
             {/* New Patient Registrations */}
             <Card
               sx={{
