@@ -26,7 +26,6 @@ export default function LoginPage() {
   const [formSuccess, setFormSuccess] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-
   const form = useForm({
     defaultValues: {
       email: "",
@@ -49,7 +48,7 @@ export default function LoginPage() {
         }
 
         setFormSuccess("Signed in successfully. Redirecting...");
-        router.push("/");
+        router.push("/appointments");
       } catch (error) {
         const message =
           error instanceof Error
@@ -76,261 +75,261 @@ export default function LoginPage() {
         backgroundColor: "#fff",
       }}
     >
-          <Typography
-            variant="h4"
-            sx={{
-              fontWeight: 700,
-              fontSize: "1.875rem",
-              lineHeight: 1.2,
-              textAlign: "center",
-              mb: 3,
-              color: "text.primary",
-            }}
-          >
-            Secure Sign In
-          </Typography>
+      <Typography
+        variant="h4"
+        sx={{
+          fontWeight: 700,
+          fontSize: "1.875rem",
+          lineHeight: 1.2,
+          textAlign: "center",
+          mb: 3,
+          color: "text.primary",
+        }}
+      >
+        Secure Sign In
+      </Typography>
 
-          <Box
-            component="form"
-            onSubmit={(e) => {
-              e.preventDefault();
-              form.handleSubmit();
-            }}
-            sx={{ display: "flex", flexDirection: "column", gap: 2 }}
-          >
-            {formError && (
-              <Alert severity="error" sx={{ mb: 1 }}>
-                {formError}
-              </Alert>
-            )}
-            {formSuccess && (
-              <Alert severity="success" sx={{ mb: 1 }}>
-                {formSuccess}
-              </Alert>
-            )}
-            {/* Email Field */}
-            <form.Field name="email">
-              {(field) => (
-                <Box sx={{ display: "flex", flexDirection: "column" }}>
-                  <Typography
-                    component="label"
-                    htmlFor="email"
-                    sx={{
-                      fontSize: "0.875rem",
-                      fontWeight: 500,
-                      lineHeight: "normal",
-                      pb: 1,
-                      color: "text.primary",
-                    }}
-                  >
-                    Email
-                  </Typography>
-                  <TextField
-                    id="email"
-                    type="email"
-                    placeholder="Enter your email"
-                    value={field.state.value}
-                    onChange={(e) => field.handleChange(e.target.value)}
-                    onBlur={field.handleBlur}
-                    required
-                    fullWidth
-                    sx={{
-                      "& .MuiOutlinedInput-root": {
-                        height: "48px",
-                        borderRadius: "12px",
-                        backgroundColor: "#F7F8FA",
-                        "& fieldset": {
-                          borderColor: "#E2E8F0",
-                        },
-                        "&:hover fieldset": {
-                          borderColor: "#94A3B8",
-                        },
-                        "&.Mui-focused fieldset": {
-                          borderColor: "#005A9C",
-                          borderWidth: "2px",
-                        },
-                        "& input": {
-                          fontSize: "1rem",
-                          fontWeight: 400,
-                        },
-                        "& input::placeholder": {
-                          color: "#9ca3af",
-                          opacity: 1,
-                        },
-                      },
-                    }}
-                  />
-                </Box>
-              )}
-            </form.Field>
-
-            {/* Password Field */}
-            <form.Field name="password">
-              {(field) => (
-                <Box sx={{ display: "flex", flexDirection: "column" }}>
-                  <Typography
-                    component="label"
-                    htmlFor="password"
-                    sx={{
-                      fontSize: "0.875rem",
-                      fontWeight: 500,
-                      lineHeight: "normal",
-                      pb: 1,
-                      color: "text.primary",
-                    }}
-                  >
-                    Password
-                  </Typography>
-                  <TextField
-                    id="password"
-                    type={showPassword ? "text" : "password"}
-                    placeholder="Enter your password"
-                    value={field.state.value}
-                    onChange={(e) => field.handleChange(e.target.value)}
-                    onBlur={field.handleBlur}
-                    required
-                    fullWidth
-                    sx={{
-                      "& .MuiOutlinedInput-root": {
-                        height: "48px",
-                        borderRadius: "12px",
-                        backgroundColor: "#F7F8FA",
-                        "& fieldset": {
-                          borderColor: "#E2E8F0",
-                        },
-                        "&:hover fieldset": {
-                          borderColor: "#94A3B8",
-                        },
-                        "&.Mui-focused fieldset": {
-                          borderColor: "#005A9C",
-                          borderWidth: "2px",
-                        },
-                        "& input": {
-                          fontSize: "1rem",
-                          fontWeight: 400,
-                        },
-                        "& input::placeholder": {
-                          color: "#9ca3af",
-                          opacity: 1,
-                        },
-                      },
-                    }}
-                    InputProps={{
-                      endAdornment: (
-                        <InputAdornment position="end">
-                          <IconButton
-                            aria-label="Toggle password visibility"
-                            onClick={handleTogglePasswordVisibility}
-                            edge="end"
-                            sx={{
-                              color: "#6b7280",
-                            }}
-                          >
-                            {showPassword ? <VisibilityOff /> : <Visibility />}
-                          </IconButton>
-                        </InputAdornment>
-                      ),
-                    }}
-                  />
-                </Box>
-              )}
-            </form.Field>
-
-            {/* Login Button */}
-            <Button
-              type="submit"
-              fullWidth
-              variant="contained"
-              disabled={isSubmitting}
-              sx={{
-                height: "48px",
-                fontSize: "1rem",
-                fontWeight: 600,
-                backgroundColor: "#005A9C",
-                "&:hover": {
-                  backgroundColor: "rgba(0, 90, 156, 0.9)",
-                },
-                mt: 1,
-              }}
-            >
-              {isSubmitting ? "Signing In..." : "Sign In"}
-            </Button>
-
-            {/* Secondary Links */}
-            <Box
-              sx={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-                pt: 1,
-              }}
-            >
-              <Link
-                href="#"
+      <Box
+        component="form"
+        onSubmit={(e) => {
+          e.preventDefault();
+          form.handleSubmit();
+        }}
+        sx={{ display: "flex", flexDirection: "column", gap: 2 }}
+      >
+        {formError && (
+          <Alert severity="error" sx={{ mb: 1 }}>
+            {formError}
+          </Alert>
+        )}
+        {formSuccess && (
+          <Alert severity="success" sx={{ mb: 1 }}>
+            {formSuccess}
+          </Alert>
+        )}
+        {/* Email Field */}
+        <form.Field name="email">
+          {(field) => (
+            <Box sx={{ display: "flex", flexDirection: "column" }}>
+              <Typography
+                component="label"
+                htmlFor="email"
                 sx={{
                   fontSize: "0.875rem",
                   fontWeight: 500,
-                  color: "#005A9C",
-                  textDecoration: "none",
-                  "&:hover": {
-                    textDecoration: "underline",
-                  },
+                  lineHeight: "normal",
+                  pb: 1,
+                  color: "text.primary",
                 }}
               >
-                Forgot Password?
-              </Link>
-              <Link
+                Email
+              </Typography>
+              <TextField
+                id="email"
+                type="email"
+                placeholder="Enter your email"
+                value={field.state.value}
+                onChange={(e) => field.handleChange(e.target.value)}
+                onBlur={field.handleBlur}
+                required
+                fullWidth
+                sx={{
+                  "& .MuiOutlinedInput-root": {
+                    height: "48px",
+                    borderRadius: "12px",
+                    backgroundColor: "#F7F8FA",
+                    "& fieldset": {
+                      borderColor: "#E2E8F0",
+                    },
+                    "&:hover fieldset": {
+                      borderColor: "#94A3B8",
+                    },
+                    "&.Mui-focused fieldset": {
+                      borderColor: "#005A9C",
+                      borderWidth: "2px",
+                    },
+                    "& input": {
+                      fontSize: "1rem",
+                      fontWeight: 400,
+                    },
+                    "& input::placeholder": {
+                      color: "#9ca3af",
+                      opacity: 1,
+                    },
+                  },
+                }}
+              />
+            </Box>
+          )}
+        </form.Field>
+
+        {/* Password Field */}
+        <form.Field name="password">
+          {(field) => (
+            <Box sx={{ display: "flex", flexDirection: "column" }}>
+              <Typography
+                component="label"
+                htmlFor="password"
+                sx={{
+                  fontSize: "0.875rem",
+                  fontWeight: 500,
+                  lineHeight: "normal",
+                  pb: 1,
+                  color: "text.primary",
+                }}
+              >
+                Password
+              </Typography>
+              <TextField
+                id="password"
+                type={showPassword ? "text" : "password"}
+                placeholder="Enter your password"
+                value={field.state.value}
+                onChange={(e) => field.handleChange(e.target.value)}
+                onBlur={field.handleBlur}
+                required
+                fullWidth
+                sx={{
+                  "& .MuiOutlinedInput-root": {
+                    height: "48px",
+                    borderRadius: "12px",
+                    backgroundColor: "#F7F8FA",
+                    "& fieldset": {
+                      borderColor: "#E2E8F0",
+                    },
+                    "&:hover fieldset": {
+                      borderColor: "#94A3B8",
+                    },
+                    "&.Mui-focused fieldset": {
+                      borderColor: "#005A9C",
+                      borderWidth: "2px",
+                    },
+                    "& input": {
+                      fontSize: "1rem",
+                      fontWeight: 400,
+                    },
+                    "& input::placeholder": {
+                      color: "#9ca3af",
+                      opacity: 1,
+                    },
+                  },
+                }}
+                InputProps={{
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <IconButton
+                        aria-label="Toggle password visibility"
+                        onClick={handleTogglePasswordVisibility}
+                        edge="end"
+                        sx={{
+                          color: "#6b7280",
+                        }}
+                      >
+                        {showPassword ? <VisibilityOff /> : <Visibility />}
+                      </IconButton>
+                    </InputAdornment>
+                  ),
+                }}
+              />
+            </Box>
+          )}
+        </form.Field>
+
+        {/* Login Button */}
+        <Button
+          type="submit"
+          fullWidth
+          variant="contained"
+          disabled={isSubmitting}
+          sx={{
+            height: "48px",
+            fontSize: "1rem",
+            fontWeight: 600,
+            backgroundColor: "#005A9C",
+            "&:hover": {
+              backgroundColor: "rgba(0, 90, 156, 0.9)",
+            },
+            mt: 1,
+          }}
+        >
+          {isSubmitting ? "Signing In..." : "Sign In"}
+        </Button>
+
+        {/* Secondary Links */}
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            pt: 1,
+          }}
+        >
+          <Link
+            href="#"
+            sx={{
+              fontSize: "0.875rem",
+              fontWeight: 500,
+              color: "#005A9C",
+              textDecoration: "none",
+              "&:hover": {
+                textDecoration: "underline",
+              },
+            }}
+          >
+            Forgot Password?
+          </Link>
+          <Link
             component={NextLink}
             href="/admin/login"
-                sx={{
-                  fontSize: "0.875rem",
-                  fontWeight: 500,
+            sx={{
+              fontSize: "0.875rem",
+              fontWeight: 500,
               color: "#005A9C",
-                  textDecoration: "none",
-                  "&:hover": {
-                    textDecoration: "underline",
-                  },
-                }}
-              >
+              textDecoration: "none",
+              "&:hover": {
+                textDecoration: "underline",
+              },
+            }}
+          >
             Sign in as Admin
-              </Link>
-            </Box>
+          </Link>
+        </Box>
 
-            <Divider
-              sx={{
-                my: 3,
-                "&::before, &::after": {
-                  borderColor: "#E2E8F0",
-                },
-                color: "#94A3B8",
-                fontSize: "0.875rem",
-              }}
-            >
-              New to our platform?
-            </Divider>
+        <Divider
+          sx={{
+            my: 3,
+            "&::before, &::after": {
+              borderColor: "#E2E8F0",
+            },
+            color: "#94A3B8",
+            fontSize: "0.875rem",
+          }}
+        >
+          New to our platform?
+        </Divider>
 
-            <Button
-              fullWidth
-              variant="outlined"
-              component={NextLink}
-              href="/register"
-              sx={{
-                height: "48px",
-                fontSize: "1rem",
-                fontWeight: 600,
-                color: "#005A9C",
-                borderColor: "#BFD6EB",
-                borderWidth: "1.5px",
-                borderRadius: "12px",
-                "&:hover": {
-                  borderColor: "#005A9C",
-                  backgroundColor: "rgba(0, 90, 156, 0.05)",
-                },
-              }}
-            >
-              Sign Up
-            </Button>
-          </Box>
+        <Button
+          fullWidth
+          variant="outlined"
+          component={NextLink}
+          href="/register"
+          sx={{
+            height: "48px",
+            fontSize: "1rem",
+            fontWeight: 600,
+            color: "#005A9C",
+            borderColor: "#BFD6EB",
+            borderWidth: "1.5px",
+            borderRadius: "12px",
+            "&:hover": {
+              borderColor: "#005A9C",
+              backgroundColor: "rgba(0, 90, 156, 0.05)",
+            },
+          }}
+        >
+          Sign Up
+        </Button>
+      </Box>
     </Card>
   );
 }
