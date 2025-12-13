@@ -1,13 +1,11 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   Add,
   CalendarMonth,
-  Cancel,
   ChevronLeft,
   ChevronRight,
-  EventAvailable,
 } from "@mui/icons-material";
 import {
   Alert,
@@ -42,6 +40,7 @@ import {
   APPOINTMENT_STATUS_COLORS,
   type AppointmentStatus,
 } from "@/lib/constants";
+import { usePatientAuthStore } from "@/stores/patientAuthStore";
 
 dayjs.extend(localizedFormat);
 dayjs.extend(utc);
@@ -120,7 +119,7 @@ export default function PatientAppointmentsPage() {
     duration: defaultDurationMinutes,
     notes: "",
   });
-  const patientSlug = "self";
+  const profile = usePatientAuthStore((state) => state.profile);
 
   const filteredAppointments = useMemo(
     () => appointments.filter((apt) => filters.includes(apt.status)),
@@ -139,10 +138,20 @@ export default function PatientAppointmentsPage() {
     [filteredAppointments]
   );
 
-  const fetchAppointments = async () => {
+  const fetchAppointments = useCallback(async () => {
+    if (!profile?.id) {
+      setFeedback({
+        type: "error",
+        message: "Session not found. Please sign in again.",
+      });
+      return;
+    }
+
     setLoading(true);
     try {
-      const response = await fetch(`/api/patients/${patientSlug}/appointments`);
+      const response = await fetch(
+        `/api/patient/appointments?patientId=${profile.id}`
+      );
       const payload = await response.json();
       if (!response.ok)
         throw new Error(payload?.error || "Failed to load appointments.");
@@ -158,30 +167,38 @@ export default function PatientAppointmentsPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [profile?.id]);
 
   useEffect(() => {
-    fetchAppointments();
-  }, []);
+    if (profile?.id) {
+      fetchAppointments();
+    }
+  }, [profile?.id, fetchAppointments]);
 
   const handleBook = async () => {
+    if (!profile?.id) {
+      setFeedback({
+        type: "error",
+        message: "Session not found. Please sign in again.",
+      });
+      return;
+    }
+
     setLoading(true);
     try {
       const start = dayjs(form.start);
       const end = start.add(form.duration, "minute");
-      const response = await fetch(
-        `/api/patients/${patientSlug}/appointments`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            type: form.type,
-            startTime: start.toISOString(),
-            endTime: end.toISOString(),
-            notes: form.notes,
-          }),
-        }
-      );
+      const response = await fetch(`/api/patient/appointments`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          patientId: profile.id,
+          type: form.type,
+          startTime: start.toISOString(),
+          endTime: end.toISOString(),
+          notes: form.notes,
+        }),
+      });
       const payload = await response.json();
       if (!response.ok)
         throw new Error(payload?.error || "Unable to book appointment.");
