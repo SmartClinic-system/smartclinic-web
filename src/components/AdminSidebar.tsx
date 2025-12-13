@@ -40,8 +40,18 @@ const navItems: NavItem[] = [
   },
 ];
 
-export default function AdminSidebar() {
+export default function AdminSidebar({
+  role,
+}: {
+  role: "ADMIN" | "STAFF" | null;
+}) {
   const pathname = usePathname();
+
+  // Filter nav items based on role
+  const filteredNavItems =
+    role === "STAFF"
+      ? navItems.filter((item) => item.path === "/admin/calendar")
+      : navItems;
 
   return (
     <Drawer
@@ -74,7 +84,7 @@ export default function AdminSidebar() {
       </Box>
 
       <List sx={{ flex: 1, px: 0, mt: 2 }}>
-        {navItems.map((item) => {
+        {filteredNavItems.map((item) => {
           const isActive = pathname === item.path;
           return (
             <ListItem key={item.path} disablePadding>

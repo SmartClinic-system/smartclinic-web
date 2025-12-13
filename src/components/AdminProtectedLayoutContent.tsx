@@ -8,12 +8,14 @@ import AdminSidebar from "@/components/AdminSidebar";
 
 export default function AdminProtectedLayoutContent({
   children,
+  role,
 }: {
   children: ReactNode;
+  role: "ADMIN" | "STAFF" | null;
 }) {
   return (
     <Box sx={{ display: "flex", minHeight: "100vh" }}>
-      <AdminSidebar />
+      <AdminSidebar role={role} />
       <Box
         component="main"
         sx={{

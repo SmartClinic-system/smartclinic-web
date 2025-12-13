@@ -3,7 +3,12 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 
 import AdminProtectedLayoutContent from "@/components/AdminProtectedLayoutContent";
-import { SESSION_COOKIE_NAME, verifySessionToken } from "@/lib/adminSession";
+import AdminRouteGuard from "@/components/AdminRouteGuard";
+import {
+  SESSION_COOKIE_NAME,
+  verifySessionToken,
+  getAdminRole,
+} from "@/lib/adminSession";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -21,7 +26,14 @@ export default async function AdminProtectedLayout({
     redirect("/admin/login");
   }
 
+  // Get admin role from database
+  const role = await getAdminRole(session.adminId);
+
   return (
-    <AdminProtectedLayoutContent>{children}</AdminProtectedLayoutContent>
+    <AdminProtectedLayoutContent role={role || "ADMIN"}>
+      <AdminRouteGuard role={role}>
+        {children}
+      </AdminRouteGuard>
+    </AdminProtectedLayoutContent>
   );
 }

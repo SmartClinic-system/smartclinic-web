@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createHmac, timingSafeEqual } from "crypto";
+import prisma from "./prisma";
 
 const SESSION_COOKIE_NAME = "smartclinic_admin_session";
 const SESSION_MAX_AGE_SECONDS = 60 * 60 * 8; // 8 hours
@@ -116,3 +117,16 @@ export function clearAdminSessionCookie(response: NextResponse) {
 }
 
 export { SESSION_COOKIE_NAME };
+
+export async function getAdminRole(adminId: string): Promise<"ADMIN" | "STAFF" | null> {
+  try {
+    const admin = await prisma.admin.findUnique({
+      where: { id: adminId },
+      select: { role: true },
+    });
+    return admin?.role ?? null;
+  } catch (error) {
+    console.error("Error fetching admin role:", error);
+    return null;
+  }
+}
