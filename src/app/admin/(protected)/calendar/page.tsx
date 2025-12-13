@@ -405,7 +405,7 @@ export default function AdminAppointmentsPage() {
         </Box>
 
         <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
-          <Card
+          {/* <Card
             sx={{
               borderRadius: 2,
               border: "1px solid",
@@ -419,7 +419,7 @@ export default function AdminAppointmentsPage() {
                 onChange={(date) => date && setCurrentDate(date)}
               />
             </LocalizationProvider>
-          </Card>
+          </Card> */}
 
           <Card
             sx={{
