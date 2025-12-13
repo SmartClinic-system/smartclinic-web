@@ -180,6 +180,7 @@ export default function AdminAppointmentsPage() {
   const eventPropGetter = (event: CalendarEvent) => {
     const colors = APPOINTMENT_STATUS_COLORS[event.resource.status];
     return {
+      className: viewMode === "agenda" ? "rbc-agenda-event-hoverable" : "",
       style: {
         backgroundColor: colors.bg,
         borderLeft: `3px solid ${colors.border}`,
@@ -383,6 +384,15 @@ export default function AdminAppointmentsPage() {
           </Box>
 
           <Box sx={{ flex: 1, mt: 2 }}>
+            <style>{`
+              .rbc-agenda-event-hoverable {
+                cursor: pointer;
+                transition: filter 0.2s ease;
+              }
+              .rbc-agenda-event-hoverable:hover {
+                filter: brightness(1.05);
+              }
+            `}</style>
             <BigCalendar
               localizer={localizer}
               events={calendarEvents}
