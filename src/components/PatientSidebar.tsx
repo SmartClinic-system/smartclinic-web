@@ -10,14 +10,8 @@ import {
   ListItemButton,
   ListItemIcon,
   ListItemText,
-  Button,
 } from "@mui/material";
-import {
-  EventAvailable,
-  Person,
-  AddCircle,
-  Dashboard,
-} from "@mui/icons-material";
+import { EventAvailable, Person, Dashboard } from "@mui/icons-material";
 import Image from "next/image";
 
 const drawerWidth = 240;
@@ -120,22 +114,6 @@ export default function PatientSidebar() {
           );
         })}
       </List>
-
-      <Button
-        variant="contained"
-        startIcon={<AddCircle />}
-        fullWidth
-        sx={{
-          mt: "auto",
-          textTransform: "none",
-          fontSize: "0.875rem",
-          fontWeight: 500,
-          minWidth: 84,
-          height: 40,
-        }}
-      >
-        Book visit
-      </Button>
     </Drawer>
   );
 }
